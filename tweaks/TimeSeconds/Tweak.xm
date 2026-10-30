@@ -1,14 +1,15 @@
 //
 //  TimeSeconds — 让状态栏时间实时显示秒数
 //  目标：iOS 16+ / RootHide（Dopamine roothide）/ 常规 rootless
-//  2.1.9 完美定版（彻底修复字体递归缩小 Bug，回归 100% 满血原生大字）：
-//    1. 彻底根除字号每秒递归缩小的恶性循环 Bug，关闭 UIKit 自动缩容
-//    2. 100% 满血苹果原生系统字号（与原生完全等大，绝不再缩小）
-//    3. 所有数字时分秒完全等大（摒弃大小字，视觉严谨对称）
-//    4. 100% 锁死苹果官方 Semibold 饱满字重（与右侧电量粗细完美一致，笔画浑厚）
-//    5. 整体向左微调 5pt，自然避开灵动岛外卖/音乐等展开遮挡，保留充裕安全边距
-//    6. 消除负字距压迫，冒号自然舒展，字符长宽比 100% 还原官方美学
-//    7. 真实零功耗待机 + 底层 C 语言纳秒级时间运算
+//  2.2.0 灵动岛智能避让纯净版（方案 2 终极落地）：
+//    1. 还原 100% 满血原生大字号、原生 Semibold 饱满粗细、原生对称居中位置（彻底去除左移与字距压缩）
+//    2. 所有数字时分秒完全等大（彻底去除大小字分层）
+//    3. 灵动岛智能感知避让：
+//       - 平时（无外卖/打车/音乐等活动）：显示 100% 满血原生秒数大字 "22:45:14"
+//       - 当灵动岛展开实时活动占用左耳空间时：智能优雅降级为原生时分 "22:45"，彻底杜绝遮挡
+//       - 实时活动收起或送达后：毫秒级自动恢复全尺寸秒数显示
+//    4. 真实零功耗待机：锁屏息屏定时器彻底停摆（0 唤醒 0 耗电），亮屏毫秒级自愈
+//    5. 底层 C 语言 time() 栈运算，属性字典单例复用，零内存抖动
 //
 
 #import <Foundation/Foundation.h>
@@ -19,13 +20,10 @@
 
 #define TSLOG(fmt, ...) NSLog(@"[TimeSeconds] " fmt, ##__VA_ARGS__)
 
-#pragma mark - 排版与视觉常量
+#pragma mark - 满血原生排版常量
 
-// 保持 100% 系统原生满血字号（绝不缩小）
+// 100% 满血苹果系统原生大字号（绝不微缩，还原官方尺寸）
 #define TS_FONT_SCALE 1.0
-
-// 向左微调 5pt，避开灵动岛外卖/打车/音乐等实时活动展开遮挡
-#define TS_OFFSET_X   (-5.0)
 
 #pragma mark - 文本正则与判定
 
@@ -81,7 +79,39 @@ static BOOL TSIsIslandInternal(UIView *view) {
     return NO;
 }
 
-#pragma mark - 原生官方 Semibold 字形提取
+#pragma mark - 灵动岛实时活动展开状态智能探测
+
+static BOOL TSIsApertureExpanded(void) {
+    @try {
+        for (UIWindow *w in [UIApplication sharedApplication].windows) {
+            NSString *wCls = NSStringFromClass([w class]);
+            if (![wCls containsString:@"Aperture"]) continue;
+
+            UIViewController *rvc = w.rootViewController;
+            if (rvc) {
+                // 方式 1：检查实时活动 elements 集合（外卖/音乐/打车激活时 count > 0）
+                if ([rvc respondsToSelector:@selector(activeElements)]) {
+                    NSArray *elems = [(id)rvc activeElements];
+                    if (elems && [elems count] > 0) return YES;
+                }
+
+                // 方式 2：检查灵动岛药丸容器视图宽度（正常黑药丸宽约 126pt，有实时活动展开时宽 > 155pt）
+                UIView *rv = rvc.view;
+                if (rv) {
+                    for (UIView *sub in rv.subviews) {
+                        CGRect b = sub.bounds;
+                        if (b.size.width > 155.0 && b.size.width < 390.0 && b.size.height > 25.0) {
+                            return YES;
+                        }
+                    }
+                }
+            }
+        }
+    } @catch (NSException *e) {}
+    return NO;
+}
+
+#pragma mark - 原生官方 Semibold 饱满字形提取
 
 static CGFloat TSGetFontWeight(UIFont *font) {
     if (!font) return UIFontWeightSemibold;
@@ -93,7 +123,7 @@ static CGFloat TSGetFontWeight(UIFont *font) {
     return UIFontWeightSemibold;
 }
 
-#pragma mark - 数据模型（严格防止字号递归收缩污染）
+#pragma mark - 数据模型（满血原生字重与防污染缓存）
 
 @interface TSItem : NSObject
 @property (nonatomic, copy) NSString *base;
@@ -101,8 +131,8 @@ static CGFloat TSGetFontWeight(UIFont *font) {
 @property (nonatomic, copy) NSString *sep;           // ":"
 @property (nonatomic, copy) NSString *suffix;        // " AM" 或 ""
 @property (nonatomic, strong) NSAttributedString *attr;
-@property (nonatomic, strong) UIFont *baseFont;      // 真实的系统原生字体（只记录系统原始，绝不被自身字体覆盖）
-@property (nonatomic, strong) UIFont *cachedFont;    // 我们派生的等宽 Semibold 字体
+@property (nonatomic, strong) UIFont *baseFont;
+@property (nonatomic, strong) UIFont *cachedFont;
 @property (nonatomic, strong) NSDictionary *cachedAttrs;
 @property (nonatomic, copy) NSString *lastOut;
 
@@ -137,18 +167,16 @@ static CGFloat TSGetFontWeight(UIFont *font) {
 
 - (void)setSystemFont:(UIFont *)font {
     if (!font) return;
-    // 关键防坑保护：如果已经是我们自己的 cachedFont，绝不可当作系统原始字体重复计算！
     if (self.cachedFont && [font isEqual:self.cachedFont]) {
         return;
     }
-    // 状态栏原生字号在 14~16pt 之间，如果检测到小于 12pt 说明被外界压缩，强行重置为正常大字 15.0pt
     CGFloat baseSize = font.pointSize;
-    if (baseSize < 12.0) baseSize = 15.0;
+    if (baseSize < 12.0) baseSize = 15.0; // 锁死正常 15pt 大字底线
 
     self.baseFont = font;
     CGFloat weight = TSGetFontWeight(font);
 
-    // 100% 满血原生大字号，Semibold 饱满粗细
+    // 100% 满血原生大字号，Semibold 饱满粗体
     CGFloat finalSize = round(baseSize * TS_FONT_SCALE * 2.0) / 2.0;
     self.cachedFont = [UIFont monospacedDigitSystemFontOfSize:finalSize weight:weight];
 
@@ -158,6 +186,7 @@ static CGFloat TSGetFontWeight(UIFont *font) {
         if (src) [attrs addEntriesFromDictionary:src];
     }
     attrs[NSFontAttributeName] = self.cachedFont;
+    // 零负字距，冒号与数字 100% 自然舒展
     attrs[NSKernAttributeName] = @(0.0);
     self.cachedAttrs = [attrs copy];
 }
@@ -218,10 +247,10 @@ static inline int TSGetCurrentSecond(void) {
     if (!base) base = TSBaseText(attr.string);
     if (!base) return;
 
-    // 关键修复：关闭 adjustsFontSizeToFitWidth，彻底杜绝 UIKit 误把状态栏缩成小蚂蚁！
+    // 彻底恢复原生位置（零位移，零压缩，关闭 UIKit 自动缩容）
+    label.transform = CGAffineTransformIdentity;
     label.adjustsFontSizeToFitWidth = NO;
     label.lineBreakMode = NSLineBreakByClipping;
-    label.transform = CGAffineTransformMakeTranslation(TS_OFFSET_X, 0.0);
 
     TSItem *it = [gViews objectForKey:label];
     if (!it) {
@@ -239,18 +268,14 @@ static inline int TSGetCurrentSecond(void) {
 - (void)renderView:(UILabel *)view item:(TSItem *)it second:(int)sec {
     if (it.base.length == 0) return;
 
-    // 维持稳定的左移微调
-    CGAffineTransform targetTransform = CGAffineTransformMakeTranslation(TS_OFFSET_X, 0.0);
-    if (!CGAffineTransformEqualToTransform(view.transform, targetTransform)) {
-        view.transform = targetTransform;
+    // 锁死原生居中位置
+    if (!CGAffineTransformIsIdentity(view.transform)) {
+        view.transform = CGAffineTransformIdentity;
     }
-
-    // 保证关闭自动缩放
     if (view.adjustsFontSizeToFitWidth) {
         view.adjustsFontSizeToFitWidth = NO;
     }
 
-    // 仅当系统重置为非我们自己的字体时，才允许重新提取系统字号
     if (view.font && it.cachedFont && ![view.font isEqual:it.cachedFont] && view.font.pointSize >= 12.0) {
         [it setSystemFont:view.font];
     }
@@ -258,7 +283,12 @@ static inline int TSGetCurrentSecond(void) {
     NSDictionary *attrs = [it getAttributes];
     if (!attrs) return;
 
-    NSString *fullOut = [NSString stringWithFormat:@"%@%@%02d%@",
+    // 方案 2 核心机制：灵动岛智能避让
+    // 当外卖/打车/音乐等实时活动展开导致左侧空间被极限挤占时，智能显示原生时分 base；
+    // 其余平时正常状态下，显示 100% 满血原生大字秒数！
+    BOOL isApertureBusy = TSIsApertureExpanded();
+    NSString *fullOut = isApertureBusy ? (it.base ?: @"") :
+                        [NSString stringWithFormat:@"%@%@%02d%@",
                          it.core ?: @"", it.sep ?: @":", sec, it.suffix ?: @""];
 
     // 短路跳过无谓重绘
@@ -404,7 +434,7 @@ static inline int TSGetCurrentSecond(void) {
         if (c) {
             gHookActive = YES;
             %init(StringViewHooks);
-            TSLOG(@"_UIStatusBarStringView hooked (Fixed Native Scale & Semibold ready)");
+            TSLOG(@"_UIStatusBarStringView hooked (Scheme 2 Pure Native & Dynamic Island Smart Avoidance ready)");
         } else {
             TSLOG(@"_UIStatusBarStringView missing — 降级进入扫描模式");
         }
