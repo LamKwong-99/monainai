@@ -1,13 +1,14 @@
 //
 //  TimeSeconds — 让状态栏时间实时显示秒数
 //  目标：iOS 16+ / RootHide（Dopamine roothide）/ 常规 rootless
-//  2.1.8 黄金比例平衡版（最美观、最实用、苹果原生级美学）：
-//    1. 所有数字时分秒完全等大（彻底抛弃大小字分层，视觉严谨对称）
-//    2. 100% 锁定苹果官方 Semibold 饱满粗细（与右侧电量粗细完美一致，笔画厚实饱满）
-//    3. 消除负字距压迫变形，冒号自然舒展，字符长宽比例 100% 还原官方 San Francisco
-//    4. 93% 黄金微缩 + 整体向左微移 4pt，彻底解决外卖/打车/音乐实时活动遮挡秒数
-//    5. 真实零功耗待机（True Zero-Power Sleep）：锁屏息屏定时器彻底停机，亮屏毫秒级自愈
-//    6. 底层 C 语言 time() 栈运算，属性字典单例复用，7x24h 零内存抖动
+//  2.1.9 完美定版（彻底修复字体递归缩小 Bug，回归 100% 满血原生大字）：
+//    1. 彻底根除字号每秒递归缩小的恶性循环 Bug，关闭 UIKit 自动缩容
+//    2. 100% 满血苹果原生系统字号（与原生完全等大，绝不再缩小）
+//    3. 所有数字时分秒完全等大（摒弃大小字，视觉严谨对称）
+//    4. 100% 锁死苹果官方 Semibold 饱满字重（与右侧电量粗细完美一致，笔画浑厚）
+//    5. 整体向左微调 5pt，自然避开灵动岛外卖/音乐等展开遮挡，保留充裕安全边距
+//    6. 消除负字距压迫，冒号自然舒展，字符长宽比 100% 还原官方美学
+//    7. 真实零功耗待机 + 底层 C 语言纳秒级时间运算
 //
 
 #import <Foundation/Foundation.h>
@@ -18,16 +19,13 @@
 
 #define TSLOG(fmt, ...) NSLog(@"[TimeSeconds] " fmt, ##__VA_ARGS__)
 
-#pragma mark - 黄金视觉排版常量
+#pragma mark - 排版与视觉常量
 
-// 93% 黄金微缩比例（所有数字完全等大，视觉上与原生毫无差异，但自然收缩 5~6pt 宽度）
-#define TS_FONT_SCALE 0.93
+// 保持 100% 系统原生满血字号（绝不缩小）
+#define TS_FONT_SCALE 1.0
 
-// 整体向左微调 4pt（利用左侧充沛边距，配合 93% 字号总计腾出 10pt+ 空间，彻底避开外卖/音乐等展开遮挡）
-#define TS_OFFSET_X   (-4.0)
-
-// 灵动岛极端挤压时的自适应微缩下限
-#define TS_MIN_SCALE  0.85
+// 向左微调 5pt，避开灵动岛外卖/打车/音乐等实时活动展开遮挡
+#define TS_OFFSET_X   (-5.0)
 
 #pragma mark - 文本正则与判定
 
@@ -95,7 +93,7 @@ static CGFloat TSGetFontWeight(UIFont *font) {
     return UIFontWeightSemibold;
 }
 
-#pragma mark - 数据模型（全等大字形与属性单例缓存）
+#pragma mark - 数据模型（严格防止字号递归收缩污染）
 
 @interface TSItem : NSObject
 @property (nonatomic, copy) NSString *base;
@@ -103,13 +101,14 @@ static CGFloat TSGetFontWeight(UIFont *font) {
 @property (nonatomic, copy) NSString *sep;           // ":"
 @property (nonatomic, copy) NSString *suffix;        // " AM" 或 ""
 @property (nonatomic, strong) NSAttributedString *attr;
-@property (nonatomic, strong) UIFont *baseFont;
-@property (nonatomic, strong) UIFont *cachedFont;
+@property (nonatomic, strong) UIFont *baseFont;      // 真实的系统原生字体（只记录系统原始，绝不被自身字体覆盖）
+@property (nonatomic, strong) UIFont *cachedFont;    // 我们派生的等宽 Semibold 字体
 @property (nonatomic, strong) NSDictionary *cachedAttrs;
 @property (nonatomic, copy) NSString *lastOut;
 
 - (void)updateBase:(NSString *)base;
-- (void)updateFontsForCurrentFont:(UIFont *)currentFont;
+- (void)setSystemFont:(UIFont *)font;
+- (NSDictionary *)getAttributes;
 @end
 
 @implementation TSItem
@@ -136,17 +135,20 @@ static CGFloat TSGetFontWeight(UIFont *font) {
     self.suffix = suf;
 }
 
-- (void)updateFontsForCurrentFont:(UIFont *)currentFont {
-    if (self.cachedAttrs && self.baseFont == currentFont) {
+- (void)setSystemFont:(UIFont *)font {
+    if (!font) return;
+    // 关键防坑保护：如果已经是我们自己的 cachedFont，绝不可当作系统原始字体重复计算！
+    if (self.cachedFont && [font isEqual:self.cachedFont]) {
         return;
     }
-    self.baseFont = currentFont;
+    // 状态栏原生字号在 14~16pt 之间，如果检测到小于 12pt 说明被外界压缩，强行重置为正常大字 15.0pt
+    CGFloat baseSize = font.pointSize;
+    if (baseSize < 12.0) baseSize = 15.0;
 
-    CGFloat baseSize = currentFont ? currentFont.pointSize : 15.0;
-    if (baseSize < 5.0) baseSize = 15.0;
-    CGFloat weight = TSGetFontWeight(currentFont);
+    self.baseFont = font;
+    CGFloat weight = TSGetFontWeight(font);
 
-    // 所有数字统一等大，统一原生 Semibold 饱满粗细
+    // 100% 满血原生大字号，Semibold 饱满粗细
     CGFloat finalSize = round(baseSize * TS_FONT_SCALE * 2.0) / 2.0;
     self.cachedFont = [UIFont monospacedDigitSystemFontOfSize:finalSize weight:weight];
 
@@ -156,9 +158,15 @@ static CGFloat TSGetFontWeight(UIFont *font) {
         if (src) [attrs addEntriesFromDictionary:src];
     }
     attrs[NSFontAttributeName] = self.cachedFont;
-    // 恢复自然光学字距，不加负字距压迫冒号
     attrs[NSKernAttributeName] = @(0.0);
     self.cachedAttrs = [attrs copy];
+}
+
+- (NSDictionary *)getAttributes {
+    if (!self.cachedAttrs) {
+        [self setSystemFont:self.baseFont ?: [UIFont systemFontOfSize:15.0 weight:UIFontWeightSemibold]];
+    }
+    return self.cachedAttrs;
 }
 
 @end
@@ -210,12 +218,10 @@ static inline int TSGetCurrentSecond(void) {
     if (!base) base = TSBaseText(attr.string);
     if (!base) return;
 
-    // 优雅微调平移 4pt，避开灵动岛展开
-    label.transform = CGAffineTransformMakeTranslation(TS_OFFSET_X, 0.0);
-    label.adjustsFontSizeToFitWidth = YES;
-    label.minimumScaleFactor = TS_MIN_SCALE;
-    label.baselineAdjustment = UIBaselineAdjustmentAlignCenters;
+    // 关键修复：关闭 adjustsFontSizeToFitWidth，彻底杜绝 UIKit 误把状态栏缩成小蚂蚁！
+    label.adjustsFontSizeToFitWidth = NO;
     label.lineBreakMode = NSLineBreakByClipping;
+    label.transform = CGAffineTransformMakeTranslation(TS_OFFSET_X, 0.0);
 
     TSItem *it = [gViews objectForKey:label];
     if (!it) {
@@ -224,7 +230,7 @@ static inline int TSGetCurrentSecond(void) {
     }
     [it updateBase:base];
     it.attr = (text.length == 0 && attr.length > 0) ? attr : nil;
-    [it updateFontsForCurrentFont:label.font];
+    [it setSystemFont:label.font];
 
     [self scheduleTick];
     [self renderView:label item:it second:TSGetCurrentSecond()];
@@ -233,16 +239,25 @@ static inline int TSGetCurrentSecond(void) {
 - (void)renderView:(UILabel *)view item:(TSItem *)it second:(int)sec {
     if (it.base.length == 0) return;
 
-    // 维持稳定的微左移平移变换
+    // 维持稳定的左移微调
     CGAffineTransform targetTransform = CGAffineTransformMakeTranslation(TS_OFFSET_X, 0.0);
     if (!CGAffineTransformEqualToTransform(view.transform, targetTransform)) {
         view.transform = targetTransform;
     }
 
-    [it updateFontsForCurrentFont:view.font];
-    if (!it.cachedAttrs) return;
+    // 保证关闭自动缩放
+    if (view.adjustsFontSizeToFitWidth) {
+        view.adjustsFontSizeToFitWidth = NO;
+    }
 
-    // 所有数字完全等大，构建统一完整时间字符串
+    // 仅当系统重置为非我们自己的字体时，才允许重新提取系统字号
+    if (view.font && it.cachedFont && ![view.font isEqual:it.cachedFont] && view.font.pointSize >= 12.0) {
+        [it setSystemFont:view.font];
+    }
+
+    NSDictionary *attrs = [it getAttributes];
+    if (!attrs) return;
+
     NSString *fullOut = [NSString stringWithFormat:@"%@%@%02d%@",
                          it.core ?: @"", it.sep ?: @":", sec, it.suffix ?: @""];
 
@@ -253,7 +268,7 @@ static inline int TSGetCurrentSecond(void) {
         return;
     }
 
-    NSAttributedString *as = [[NSAttributedString alloc] initWithString:fullOut attributes:it.cachedAttrs];
+    NSAttributedString *as = [[NSAttributedString alloc] initWithString:fullOut attributes:attrs];
 
     gInternal = YES;
     @try {
@@ -389,7 +404,7 @@ static inline int TSGetCurrentSecond(void) {
         if (c) {
             gHookActive = YES;
             %init(StringViewHooks);
-            TSLOG(@"_UIStatusBarStringView hooked (Golden Ratio Engine ready)");
+            TSLOG(@"_UIStatusBarStringView hooked (Fixed Native Scale & Semibold ready)");
         } else {
             TSLOG(@"_UIStatusBarStringView missing — 降级进入扫描模式");
         }
