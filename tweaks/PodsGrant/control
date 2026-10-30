@@ -1,11 +1,12 @@
 Package: com.lns.pogr
 Name: PodsGrant Enhanced
-Version: 1.0.0
+Version: 1.0.1
 Architecture: iphoneos-arm64
 Description: 优化版 AirPods/Beats 兼容插件：
  · 彻底解决开机/重启后无弹窗问题（首次解锁自动重载配置）
  · 毫秒级极速开盖弹窗响应（Zero-Copy 零拷贝与广播 micro-cache 优化）
  · 支持 AirPods 4（标准版/降噪版）、AirPods Pro 2（Type-C/Lightning）、AirPods 3 等
+ · 完美补全设置面板高分辨率高清图标
  · 完美兼容 Rootless / RootHide 环境
 Maintainer: LamKwong <abc999mn@163.com>
 Author: LNSSPsd & LamKwong
