@@ -44,13 +44,13 @@
 进入 [GitHub New Repository](https://github.com/new)，新建一个 **Public** 仓库（例如仓库名填 `monainai` 或 `repo`）。
 
 ### 2. 推送代码到 GitHub
-在本地终端执行（将 `<your-username>` 和 `<repo-name>` 替换为你的 GitHub 用户名与仓库名）：
+在本地终端执行（将 `LamKwong-99` 和 `monainai` 替换为你的 GitHub 用户名与仓库名）：
 
 ```bash
 git add -A
 git commit -m "init: iOS jailbreak repository"
 git branch -M main
-git remote add origin https://github.com/<your-username>/<repo-name>.git
+git remote add origin https://github.com/LamKwong-99/monainai.git
 git push -u origin main
 ```
 
@@ -59,4 +59,4 @@ git push -u origin main
 2. **Build and deployment** -> **Source** 选择 `Deploy from a branch`。
 3. 分支选择 `main`，目录选择 `/ (root)`，点击 **Save**。
 4. 等待 1~2 分钟，即可获得你的专属源地址：
-   `https://<your-username>.github.io/<repo-name>/`
+   `https://LamKwong-99.github.io/monainai/`
