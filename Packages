@@ -153,10 +153,10 @@ Author: ajun
 Tag: purpose::extension
 Installed-Size: 204
 Filename: debs/com.ajun.timeseconds_2.1.5_iphoneos-arm64.deb
-Size: 14344
-MD5sum: 21c819d4a5a9c9b6fa899e9b39ac78dc
-SHA1: ce9dd10d19e3cdb3efa0c8cfc7d9bf65bda8a999
-SHA256: c6488281bf1d5413ca025c9991ed1fbca4b6b6fe6d2b2486492972f6d054c02c
+Size: 14306
+MD5sum: 02a165fb98a03b0d9ef1d5d080c07516
+SHA1: 84bccfd2aa461328b10c8834a5b5fc9429212b75
+SHA256: 14c75b23df79517c81e530281b97d154f9a4beb100edeec471dd3264ed564aae
 Description: 让状态栏时间实时显示秒数
  系统状态栏默认只在分钟变化时刷新，本插件接管时间文本，
  每秒更新一次，显示成 9:41:07 这样的格式。
@@ -196,4 +196,27 @@ Description: 优化版 AirPods/Beats 兼容插件：
  · 彻底解决开机/重启后无弹窗问题（首次解锁自动重载配置）
  · 毫秒级极速开盖弹窗响应（Zero-Copy 零拷贝与广播 micro-cache 优化）
  · 支持 AirPods 4（标准版/降噪版）、AirPods Pro 2（Type-C/Lightning）、AirPods 3 等
+ · 完美兼容 Rootless / RootHide 环境
+
+Package: com.lns.pogr
+Name: PodsGrant Enhanced
+Version: 1.0.1
+Architecture: iphoneos-arm64
+Section: Tweaks
+Depends: mobilesubstrate (>= 0.9.5000)
+Maintainer: LamKwong <abc999mn@163.com>
+Author: LNSSPsd & LamKwong
+Icon: https://raw.githubusercontent.com/LNSSPsd/PodsGrant/main/podsgrantsettings/Resources/icon%402x.png
+Tag: purpose::extension
+Installed-Size: 520
+Filename: debs/com.lns.pogr_1.0.1_iphoneos-arm64.deb
+Size: 60062
+MD5sum: fea4f79a16ab240136735170a7c02b4d
+SHA1: ba5892eb978df3443cc7d95ad438f68abb1d9687
+SHA256: 3b0b0b929c13e2bdae04459c9941349d52e5456444b4c61033424037da203efc
+Description: 优化版 AirPods/Beats 兼容插件：
+ · 彻底解决开机/重启后无弹窗问题（首次解锁自动重载配置）
+ · 毫秒级极速开盖弹窗响应（Zero-Copy 零拷贝与广播 micro-cache 优化）
+ · 支持 AirPods 4（标准版/降噪版）、AirPods Pro 2（Type-C/Lightning）、AirPods 3 等
+ · 完美补全设置面板高分辨率高清图标
  · 完美兼容 Rootless / RootHide 环境
