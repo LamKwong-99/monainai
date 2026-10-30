@@ -95,7 +95,7 @@ static inline uint16_t fast_patch_pid(uint16_t orig) {
 %end
 
 // ==========================================
-// iOS 16 专属质感：全天候纯黑卡片 + Taptic Engine 开盖轻触反馈
+// iOS 16 质感增强：自适应系统深浅色模式 + Taptic Engine 触觉反馈
 // ==========================================
 %group darkpods_hook_grp
 
@@ -119,9 +119,7 @@ static void PGS_TriggerHapticFeedback(void) {
 - (void)didMoveToWindow {
 	%orig;
 	if (self.window) {
-		// 1. 强制全天候深色卡片：无论系统处于白天浅色还是夜间深色，弹窗均保持高级黑
-		self.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
-		// 2. 弹窗登场瞬间伴随轻微清脆的 Taptic Engine 线性马达震动
+		// 弹窗登场瞬间伴随轻微清脆的 Taptic Engine 线性马达震动（不锁死深色，完全跟随系统浅色/深色模式切换）
 		PGS_TriggerHapticFeedback();
 	}
 }
