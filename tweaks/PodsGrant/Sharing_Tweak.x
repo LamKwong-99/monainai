@@ -18,6 +18,8 @@
 @end
 
 @interface PRXFlowConfiguration : NSObject
+- (void)setSupportsDarkMode:(BOOL)arg1;
+- (BOOL)supportsDarkMode;
 @end
 
 static struct podsgrant_settings *settings = NULL;
