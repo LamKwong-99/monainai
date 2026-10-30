@@ -1,4 +1,5 @@
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 #include <mach-o/dyld.h>
 #include <notify.h>
 #include "general.h"
@@ -75,6 +76,87 @@ static inline uint16_t fast_patch_pid(uint16_t orig) {
 
 %end
 
+// ==========================================
+// DarkPods + iOS 17 高对比度深色模式弹窗增强模块
+// ==========================================
+%group darkpods_hook_grp
+
+@interface PRXTextView : UITextView
+- (void)setTitleText:(id)titleView;
+@end
+
+static void PGS_FixViewContrastRecursively(UIView *view) {
+	if (!view) return;
+	for (UIView *sub in view.subviews) {
+		if ([sub isKindOfClass:[UIImageView class]]) {
+			UIImageView *iv = (UIImageView *)sub;
+			CGSize sz = iv.bounds.size;
+			CGSize imgSz = iv.image ? iv.image.size : CGSizeZero;
+			// 仅针对小图标（如 L / R 标识、充电盒微缩图标），排除中间巨大的耳机主展示大图
+			BOOL isSmallIcon = (sz.width > 0 && sz.width < 70 && sz.height < 70) ||
+			                   (imgSz.width > 0 && imgSz.width < 70 && imgSz.height < 70);
+			if (isSmallIcon) {
+				// 将暗淡的小图标提亮为自然高对比度浅白色 (iOS 17 视觉基准)
+				iv.tintColor = [UIColor colorWithWhite:0.92 alpha:1.0];
+			}
+		} else if ([sub isKindOfClass:[UILabel class]]) {
+			UILabel *lbl = (UILabel *)sub;
+			CGFloat r = 0, g = 0, b = 0, a = 0;
+			if ([lbl.textColor getRed:&r green:&g blue:&b alpha:&a]) {
+				// 提亮暗色字体，保证文字在深色背景下清晰可见
+				if (r < 0.6 && g < 0.6 && b < 0.6) {
+					lbl.textColor = [UIColor colorWithWhite:0.92 alpha:1.0];
+				}
+			}
+		}
+		if (sub.subviews.count > 0) {
+			PGS_FixViewContrastRecursively(sub);
+		}
+	}
+}
+
+%hook PRXCardContentView
+
+- (void)setTitleView:(PRXTextView *)titleView {
+	%orig;
+	if (titleView && [titleView respondsToSelector:@selector(setTitleText:)]) {
+		// iOS 17 风格加粗标题
+		[titleView setTitleText:titleView.text];
+	}
+}
+
+- (void)layoutSubviews {
+	%orig;
+	if (self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) {
+		PGS_FixViewContrastRecursively(self);
+	}
+}
+
+- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
+	%orig;
+	if (self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) {
+		PGS_FixViewContrastRecursively(self);
+	}
+}
+
+%end
+
+%hook PRXFlowConfiguration
+
+// iOS 15/16 激活暗黑模式支持
+- (void)setSupportsDarkMode:(BOOL)arg1 {
+	%orig(YES);
+}
+
+// iOS 14 兼容
+- (BOOL)supportsDarkMode {
+	return YES;
+}
+
+%end
+
+%end
+
 %dtor {
 	if (g_unlock_token != 0) {
 		notify_cancel(g_unlock_token);
@@ -91,7 +173,12 @@ static inline uint16_t fast_patch_pid(uint16_t orig) {
 	uint32_t len = sizeof(exec_path);
 	_NSGetExecutablePath(exec_path, &len);
 
-	// 仅对非 bluetoothd 进程（如 sharingd, SharingViewService, SpringBoard）初始化
+	// 1. 若注入目标为弹窗渲染服务 (SharingViewService)，激活 DarkPods 深色模式与对比度修复
+	if (strstr(exec_path, "SharingViewService") != NULL) {
+		%init(darkpods_hook_grp);
+	}
+
+	// 2. 仅对非 bluetoothd 进程（如 sharingd, SharingViewService, SpringBoard）初始化
 	if (memcmp(exec_path, "/usr/sbin/bluetoothd", 21) != 0) {
 		PGS_initOSVersion();
 		reload_settings_if_needed();
