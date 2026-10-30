@@ -527,3 +527,27 @@ Description: 优化版 AirPods/Beats 兼容插件：
  · 4 槽位环形广播微缓存：多设备环境杜绝缓存抖动，弹窗动画 120Hz 丝滑无丢帧
  · 彻底解决开机/重启后无弹窗问题（首次解锁自动重载配置）
  · 包含全套视网膜高清设置图标，完美兼容 iOS 15-16 Rootless / RootHide 环境
+
+Package: com.lns.pogr
+Name: PodsGrant Enhanced
+Version: 1.0.7
+Architecture: iphoneos-arm64
+Section: Tweaks
+Depends: mobilesubstrate (>= 0.9.5000)
+Maintainer: LamKwong <abc999mn@163.com>
+Author: LNSSPsd & iCraze & LamKwong
+Icon: https://raw.githubusercontent.com/LNSSPsd/PodsGrant/main/podsgrantsettings/Resources/icon%402x.png
+Tag: purpose::extension
+Installed-Size: 540
+Filename: debs/com.lns.pogr_1.0.7_iphoneos-arm64.deb
+Size: 62728
+MD5sum: 4f1c12e214f280ba8f7dbc01958b5625
+SHA1: 0a26784ba797fa1ad67a475711cd59b661d9ccdc
+SHA256: 5f2b750ef640324d9976886a0a87f165a3cf4c38ca8f48b75f6dc46e1e5ebc83
+Description: 优化版 AirPods/Beats 兼容插件：
+ · 彻底杜绝冷启动白闪（终极修复）：补全 SharingViewService 动态库注入链，从根源顶级 UIWindow 与 SlideUp 转场动画控制层强制锁定系统模式，0毫秒消除所有白色毛玻璃卡顿
+ · 毫秒级性能释放：弹窗渲染服务剔除磁盘 I/O 阻塞，冷启动极速秒弹
+ · 优雅自适应深浅色：开盖弹窗完全跟随 iOS 16 系统模式，白天优雅纯白，夜间深邃高级黑
+ · Taptic Engine 线性马达震感：开盖弹窗登场瞬间伴随清脆微触感反馈（2秒防抖）
+ · 4 槽位环形广播微缓存：多设备环境杜绝缓存抖动，弹窗动画 120Hz 丝滑无丢帧
+ · 包含全套视网膜高清设置图标，完美兼容 iOS 15-16 Rootless / RootHide 环境
