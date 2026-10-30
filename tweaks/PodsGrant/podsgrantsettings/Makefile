@@ -1,13 +1,12 @@
-TARGET := iphone:clang:latest:14.0
-ARCHS := arm64e arm64
+TARGET = iphone:clang:16.5:15.0
+ARCHS = arm64 arm64e
 
 include $(THEOS)/makefiles/common.mk
 
 BUNDLE_NAME = podsgrantsettings
 
 podsgrantsettings_FILES = ../general.c PGSRootListController.m PGSProductIDMappingController.m PGSProductIDEditingViewController.m PGSSelectTargetProductIDViewController.m PGSCreditsViewController.m
-#podsgrantsettings_FRAMEWORKS = UIKit
-#podsgrantsettings_PRIVATE_FRAMEWORKS = Preferences
+podsgrantsettings_FRAMEWORKS = UIKit Foundation
 podsgrantsettings_INSTALL_PATH = /Library/PreferenceBundles
 podsgrantsettings_CFLAGS = -fobjc-arc
 
