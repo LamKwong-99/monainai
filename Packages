@@ -551,3 +551,27 @@ Description: 优化版 AirPods/Beats 兼容插件：
  · Taptic Engine 线性马达震感：开盖弹窗登场瞬间伴随清脆微触感反馈（2秒防抖）
  · 4 槽位环形广播微缓存：多设备环境杜绝缓存抖动，弹窗动画 120Hz 丝滑无丢帧
  · 包含全套视网膜高清设置图标，完美兼容 iOS 15-16 Rootless / RootHide 环境
+
+Package: com.lns.pogr
+Name: PodsGrant Enhanced
+Version: 1.0.8
+Architecture: iphoneos-arm64
+Section: Tweaks
+Depends: mobilesubstrate (>= 0.9.5000)
+Maintainer: LamKwong <abc999mn@163.com>
+Author: LNSSPsd & iCraze & LamKwong
+Icon: https://raw.githubusercontent.com/LNSSPsd/PodsGrant/main/podsgrantsettings/Resources/icon%402x.png
+Tag: purpose::extension
+Filename: debs/com.lns.pogr_1.0.8_iphoneos-arm64.deb
+Size: 151128
+MD5sum: a30afd542f98442dd68294eab8de03a0
+SHA1: 99df51b4667f2f0b8d5c6f390a43534e39dcea6b
+SHA256: 2d7088af01ca44303cad1a986467766374388c06403a24a8e2edb18e44e54b6d
+Description: 优化版 AirPods/Beats 兼容插件：
+ · 修复 Sileo 解压报错：重构 PreferenceLoader 标准目录映射，彻底解决 dpkg 解包 No such file or directory 错误
+ · 彻底杜绝冷启动白闪（终极修复）：补全 SharingViewService 动态库注入链，从根源顶级 UIWindow 与 SlideUp 转场动画控制层强制锁定系统模式，0毫秒消除所有白色毛玻璃卡顿
+ · 毫秒级性能释放：弹窗渲染服务剔除磁盘 I/O 阻塞，冷启动极速秒弹
+ · 优雅自适应深浅色：开盖弹窗完全跟随 iOS 16 系统模式，白天优雅纯白，夜间深邃高级黑
+ · Taptic Engine 线性马达震感：开盖弹窗登场瞬间伴随清脆微触感反馈（2秒防抖）
+ · 4 槽位环形广播微缓存：多设备环境杜绝缓存抖动，弹窗动画 120Hz 丝滑无丢帧
+ · 包含全套视网膜高清设置图标，完美兼容 iOS 15-16 Rootless / RootHide 环境
