@@ -1,8 +1,9 @@
 Package: com.lns.pogr
 Name: PodsGrant Enhanced
-Version: 1.0.7
+Version: 1.0.8
 Architecture: iphoneos-arm64
 Description: 优化版 AirPods/Beats 兼容插件：
+ · 修复 Sileo 解压报错：重构 PreferenceLoader 标准目录映射，彻底解决 dpkg 解包 No such file or directory 错误
  · 彻底杜绝冷启动白闪（终极修复）：补全 SharingViewService 动态库注入链，从根源顶级 UIWindow 与 SlideUp 转场动画控制层强制锁定系统模式，0毫秒消除所有白色毛玻璃卡顿
  · 毫秒级性能释放：弹窗渲染服务剔除磁盘 I/O 阻塞，冷启动极速秒弹
  · 优雅自适应深浅色：开盖弹窗完全跟随 iOS 16 系统模式，白天优雅纯白，夜间深邃高级黑
