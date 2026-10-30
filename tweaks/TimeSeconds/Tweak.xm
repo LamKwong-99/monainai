@@ -1,12 +1,12 @@
 //
 //  TimeSeconds — 让状态栏时间实时显示秒数
 //  目标：iOS 16+ / RootHide（Dopamine roothide）/ 常规 rootless
-//  2.1.5 极客性能与超低功耗引擎：
-//    1. 真实零功耗待机（True Zero-Power Sleep）：锁屏/息屏定时器彻底停摆，亮屏毫秒级自愈唤醒
-//    2. 纳秒级无分配时间源：底层 C 语言 time() + localtime_r() 纯栈运算，消除堆对象分配
-//    3. 预解析分段时间缓存：每分钟仅解析 1 次正则，每小时消除 7,200 次正则计算
-//    4. 富文本属性与字体单例复用：消除每秒高频字典与字形描述符临时对象
-//    5. 灵动岛全机型弹性微缩自适应与中心对齐锁定
+//  2.1.6 灵动岛防遮挡与极客低功耗版：
+//    1. 视觉避让防遮挡：96% 精细字号 + 适度紧凑字距 + 向左微调 7pt，彻底解决实时活动遮挡秒数
+//    2. 真实零功耗待机：锁屏/息屏定时器彻底停摆（0 唤醒 0 耗电），亮屏毫秒级自愈
+//    3. 纳秒级无分配时间源：底层 C 语言 time() + localtime_r() 纯栈运算，消除堆对象分配
+//    4. 预解析分段时间缓存：每分钟仅解析 1 次正则，每小时消除 7,200 次正则计算
+//    5. 富文本属性与字体单例复用：消除每秒高频临时字典与字形描述符对象
 //
 
 #import <Foundation/Foundation.h>
@@ -19,9 +19,10 @@
 
 #pragma mark - 视觉与排版常量
 
-#define TS_FONT_SCALE 1.0     // 保持 100% 系统原生字号
-#define TS_KERN_RATIO 0.05    // 字距收紧比例，消除秒数跳动抖动并防挤爆
-#define TS_MIN_SCALE 0.82     // 灵动岛展开挤压时的极限自适应微缩下限
+#define TS_FONT_SCALE 0.96    // 整体微调至 96% 字号，数字保持等大且兼顾大字观感
+#define TS_KERN_RATIO 0.065   // 字距适度收紧，收敛宽度防抖防挤
+#define TS_OFFSET_X   (-7.0)  // 整体向屏幕左侧平移 7pt，彻底避开灵动岛实时活动膨胀遮挡
+#define TS_MIN_SCALE  0.82    // 灵动岛展开挤压时的极限自适应微缩下限
 
 #pragma mark - 文本正则与判定
 
@@ -110,7 +111,6 @@ static NSNumber *TSKernForSize(CGFloat size) {
 @property (nonatomic, copy) NSString *suffix;        // " AM" 或 ""
 @property (nonatomic, strong) NSAttributedString *attr;
 @property (nonatomic, strong) UIFont *baseFont;
-@property (nonatomic, strong) UIFont *appliedFont;
 @property (nonatomic, strong) UIFont *cachedFont;
 @property (nonatomic, strong) NSDictionary *cachedAttrs;
 @property (nonatomic, copy) NSString *lastOut;
@@ -216,11 +216,12 @@ static inline int TSGetCurrentSecond(void) {
     if (!base) base = TSBaseText(attr.string);
     if (!base) return;
 
-    // 灵动岛防挤压与居中锁定
+    // 灵动岛防挤压、垂直居中对齐与左移偏移
     label.adjustsFontSizeToFitWidth = YES;
     label.minimumScaleFactor = TS_MIN_SCALE;
     label.baselineAdjustment = UIBaselineAdjustmentAlignCenters;
     label.lineBreakMode = NSLineBreakByClipping;
+    label.transform = CGAffineTransformMakeTranslation(TS_OFFSET_X, 0.0);
 
     TSItem *it = [gViews objectForKey:label];
     if (!it) {
@@ -233,7 +234,6 @@ static inline int TSGetCurrentSecond(void) {
         it.baseFont = label.font;
     }
 
-    // 若当前定时器处于休眠停摆状态，则立即唤醒对齐
     [self scheduleTick];
     [self renderView:label item:it second:TSGetCurrentSecond()];
 }
@@ -244,6 +244,12 @@ static inline int TSGetCurrentSecond(void) {
     // 纳秒级预缓存字符串拼接
     NSString *out = [NSString stringWithFormat:@"%@%@%02d%@",
                      it.core ?: @"", it.sep ?: @":", sec, it.suffix ?: @""];
+
+    // 确保向左微调平移稳定维持，不被系统还原
+    CGAffineTransform targetTransform = CGAffineTransformMakeTranslation(TS_OFFSET_X, 0.0);
+    if (!CGAffineTransformEqualToTransform(view.transform, targetTransform)) {
+        view.transform = targetTransform;
+    }
 
     UIFont *currentFont = view.font;
     if (it.appliedFont && currentFont != it.appliedFont) {
@@ -300,7 +306,6 @@ static inline int TSGetCurrentSecond(void) {
     // 核心节能逻辑：
     // 只有在屏幕上有可见状态栏时才继续调度下一个整秒；
     // 一旦息屏/锁屏状态栏隐藏，定时器彻底停机（0 唤醒、0 耗电）。
-    // 用户再次亮屏时，系统 SpringBoard 会触发 setText: 从而唤醒本插件。
     if (anyVisible) {
         [self scheduleTick];
     }
@@ -343,7 +348,7 @@ static inline int TSGetCurrentSecond(void) {
 #pragma mark 兜底扫描（仅在 Hook 失效时按需激活）
 
 - (void)maybeScan {
-    if (gHookActive) return; // Hook 正常时永久关闭全局扫描，彻底释放 CPU
+    if (gHookActive) return;
     NSTimeInterval now = CFAbsoluteTimeGetCurrent();
     if (now - gLastScan < 3.0) return;
     gLastScan = now;
@@ -403,7 +408,7 @@ static inline int TSGetCurrentSecond(void) {
         if (c) {
             gHookActive = YES;
             %init(StringViewHooks);
-            TSLOG(@"_UIStatusBarStringView hooked (Zero-Power Engine ready)");
+            TSLOG(@"_UIStatusBarStringView hooked (Island Anti-Overlap & Zero-Power ready)");
         } else {
             TSLOG(@"_UIStatusBarStringView missing — 降级进入扫描模式");
         }
