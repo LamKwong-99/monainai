@@ -1,20 +1,11 @@
 //
 //  TimeSeconds — 让状态栏时间实时显示秒数
 //  目标：iOS 16+ / RootHide（Dopamine roothide）/ 常规 rootless
-//
-//  原理：
-//    iOS 16 的状态栏时间由 UIKitCore 的 _UIStatusBarTimeItem 驱动，
-//    最终写到 _UIStatusBarStringView（UILabel 子类）的 text 上，
-//    而系统只在「分钟变化」时才刷新它。
-//
-//    本 tweak 做两件事：
-//      1. hook -[_UIStatusBarStringView setText:] / setAttributedText:
-//         抓住系统写进来的分钟级文本（"9:41"），记为 base；
-//      2. 自己跑一个对齐到整秒的 NSTimer，每秒把 base 重新渲染成
-//         "9:41:07"（保留 12/24 小时制与 AM/PM 后缀）。
-//
-//    如果 hook 没抓到（类名变化等），还有一层兜底：
-//    每秒扫描一次状态栏视图树，找形如时间的 UILabel 自行接管。
+//  针对灵动岛（Dynamic Island）全机型专门深度优化：
+//    1. 灵动岛实时活动极限挤压防护（自适应弹性压缩，不截断、不显示省略号）
+//    2. OLED AOD（全天候显示）与锁屏息屏深度节能（息屏自动休眠，杜绝后台耗电）
+//    3. 灵动岛弹簧动画居中基线抗抖动（保证伸缩变形时视觉垂直居中）
+//    4. 灵动岛内部药丸组件防误抓隔离（精准只接管状态栏主时钟）
 //
 
 #import <Foundation/Foundation.h>
@@ -23,6 +14,17 @@
 #import <math.h>
 
 #define TSLOG(fmt, ...) NSLog(@"[TimeSeconds] " fmt, ##__VA_ARGS__)
+
+#pragma mark - 视觉与排版常量
+
+// 保持 100% 原生系统字号（与原生完全一致）
+#define TS_FONT_SCALE 1.0
+
+// 字距收紧比例（相对字号）。0.05 ≈ 14.5pt 下每个字符间隙收 0.7pt，收敛宽度防挤爆
+#define TS_KERN_RATIO 0.05
+
+// 灵动岛展开（实时活动/音乐波形/导航挤压）时的极限自适应微缩下限
+#define TS_MIN_SCALE 0.82
 
 #pragma mark - 文本判定 / 渲染
 
@@ -82,6 +84,23 @@ static NSString *TSWithSeconds(NSString *base, NSInteger sec) {
     return [NSString stringWithFormat:@"%@%@%02ld%@", core, sep, (long)sec, suffix];
 }
 
+// 检查是否为灵动岛药丸内部的私有子视图（避免误抓灵动岛内部自带的倒计时）
+static BOOL TSIsIslandInternal(UIView *view) {
+    UIView *cur = view;
+    while (cur) {
+        NSString *cls = NSStringFromClass([cur class]);
+        if ([cls containsString:@"SystemAperture"] ||
+            [cls containsString:@"Jindo"] ||
+            [cls containsString:@"IslandContainer"] ||
+            [cls containsString:@"ActivityLeading"] ||
+            [cls containsString:@"ActivityTrailing"]) {
+            return YES;
+        }
+        cur = cur.superview;
+    }
+    return NO;
+}
+
 #pragma mark - 每个视图的状态
 
 @interface TSItem : NSObject
@@ -94,13 +113,6 @@ static NSString *TSWithSeconds(NSString *base, NSInteger sec) {
 @end
 @implementation TSItem
 @end
-
-// 让数字等宽，避免秒数跳动时状态栏宽度抖动
-// 保持 100% 系统原生字号大小（1.0 = 原生字号，不缩小 5%）
-#define TS_FONT_SCALE 1.0
-
-// 字距收紧比例（相对字号）。0 = 系统默认；0.05 ≈ 14.5pt 下每个字符间隙收 0.7pt
-#define TS_KERN_RATIO 0.05
 
 static UIFont *TSMonospacedDigits(UIFont *font) {
     if (!font) return nil;
@@ -125,11 +137,12 @@ static NSNumber *TSKernForSize(CGFloat size) {
     return @(k);
 }
 
-#pragma mark - 时钟
+#pragma mark - 时钟与状态管理器
 
 @interface TSClock : NSObject
 + (instancetype)shared;
 - (void)registerView:(id)view;
+- (void)scheduleTick;
 @end
 
 static BOOL gInternal = NO;                       // 防止自己的写入被 hook 再次处理
@@ -153,12 +166,21 @@ static NSTimeInterval gLastScan = 0;
     if (![view isKindOfClass:[UILabel class]]) return;
     UILabel *label = (UILabel *)view;
 
+    // 隔离灵动岛内部自带的倒计时组件
+    if (TSIsIslandInternal(label)) return;
+
     NSString *text = label.text;
     NSAttributedString *attr = label.attributedText;
 
     NSString *base = TSBaseText(text);
     if (!base) base = TSBaseText(attr.string);
     if (!base) return;
+
+    // 灵动岛适配：设置弹性自适应与垂直居中锁定
+    label.adjustsFontSizeToFitWidth = YES;
+    label.minimumScaleFactor = TS_MIN_SCALE;
+    label.baselineAdjustment = UIBaselineAdjustmentAlignCenters;
+    label.lineBreakMode = NSLineBreakByClipping;
 
     TSItem *it = [gViews objectForKey:label];
     if (!it) {
@@ -167,7 +189,6 @@ static NSTimeInterval gLastScan = 0;
     }
     it.base = base;
     it.attr = (text.length == 0 && attr.length > 0) ? attr : nil;
-    // 只有在字体不是我们自己写进去的时候，才把它当作系统原始字体
     if (it.appliedFont == nil || label.font != it.appliedFont) {
         it.baseFont = label.font;
     }
@@ -185,7 +206,7 @@ static NSTimeInterval gLastScan = 0;
     // 字体：始终从系统原始字体推导，避免每分钟被重复缩放
     UIFont *f = view.font;
     if (it.appliedFont && f != it.appliedFont) {
-        it.baseFont = f;                     // 系统换了字体（灵动岛 / 样式切换），跟着走
+        it.baseFont = f;                     // 系统换了字体（灵动岛药丸变大/样式切换），跟着走
     } else if (!it.baseFont) {
         it.baseFont = f;
     }
@@ -193,15 +214,13 @@ static NSTimeInterval gLastScan = 0;
     UIFont *want = TSMonospacedDigits(it.baseFont);
     if (!want) return;
 
-    // 文本和字号都没变就不用重写（减少无谓的布局）
-    // 同时要比对视图上当前实际显示的内容：系统可能刚写回分钟级文本
+    // 文本和字号都没变就跳过，避免灵动岛弹簧动画过程中的多余布局重绘
     NSString *cur = view.text;
     if (cur.length == 0) cur = view.attributedText.string;
     BOOL sameText = [it.lastOut isEqualToString:out] && [cur isEqualToString:out];
     BOOL sameSize = (fabs(it.lastSize - want.pointSize) <= 0.01);
     if (sameText && sameSize) return;
 
-    // 用 attributedText 才能带字距；其余属性沿用系统原来那份（如果有）
     NSMutableDictionary *attrs = [NSMutableDictionary dictionary];
     if (it.attr.length > 0) {
         NSDictionary *src = [it.attr attributesAtIndex:0 effectiveRange:NULL];
@@ -223,10 +242,13 @@ static NSTimeInterval gLastScan = 0;
     }
 }
 
-#pragma mark 定时器（对齐到整秒）
+#pragma mark 定时器与 AOD / 息屏节能调度
 
 - (void)scheduleTick {
-    if (gTimer) return;
+    if (gTimer) {
+        [gTimer invalidate];
+        gTimer = nil;
+    }
     NSTimeInterval now = CFAbsoluteTimeGetCurrent();
     NSTimeInterval delay = 1.0 - fmod(now, 1.0) + 0.01;
     if (delay < 0.05) delay += 1.0;
@@ -236,37 +258,65 @@ static NSTimeInterval gLastScan = 0;
     [[NSRunLoop mainRunLoop] addTimer:gTimer forMode:NSRunLoopCommonModes];
 }
 
-- (void)tick {
-    gTimer = nil;
-    @autoreleasepool {
-        [self refreshAll];
-    }
-    [self scheduleTick];
+// 低功耗待机模式（AOD 息屏 / 锁屏状态栏淡出时调度，3 秒一次轻量轮询）
+- (void)scheduleIdleTick {
+    if (gTimer) return;
+    gTimer = [NSTimer timerWithTimeInterval:3.0 target:self selector:@selector(tick) userInfo:nil repeats:NO];
+    gTimer.tolerance = 0.5;
+    [[NSRunLoop mainRunLoop] addTimer:gTimer forMode:NSRunLoopCommonModes];
 }
 
-- (void)refreshAll {
+- (void)tick {
+    gTimer = nil;
+    BOOL anyVisible = NO;
+    @autoreleasepool {
+        anyVisible = [self refreshAll];
+    }
+
+    // 智能动态节电：若当前屏幕有可见状态栏，则保持 1 秒高精度对齐；
+    // 若当前无任何可见状态栏（手机息屏/全屏游戏隐藏状态栏/锁屏深睡），则进入低功耗待机
+    if (anyVisible) {
+        [self scheduleTick];
+    } else {
+        [self scheduleIdleTick];
+    }
+}
+
+- (BOOL)refreshAll {
     NSMutableArray *keys = [NSMutableArray array];
     for (id k in gViews) [keys addObject:k];
+
+    BOOL anyVisible = NO;
 
     for (UILabel *v in keys) {
         TSItem *it = [gViews objectForKey:v];
         if (!it) continue;
 
-        // 系统在整分钟时会重新写一次文本，这里自动跟上
-        NSString *cur = v.text;
-        if (TSIsMinuteText(cur)) {
-            it.base = cur;
-        } else if (cur.length == 0) {
-            NSString *as = v.attributedText.string;
-            if (TSIsMinuteText(as)) {
-                it.base = as;
-                it.attr = v.attributedText;
+        // 视图可见性检查（挂载在活跃窗口、未隐藏、透明度大于 0.05）
+        BOOL isVisible = (v.window != nil && !v.hidden && v.alpha > 0.05);
+        if (isVisible) {
+            anyVisible = YES;
+            // 系统在整分钟时会重新写一次文本，自动跟进
+            NSString *cur = v.text;
+            if (TSIsMinuteText(cur)) {
+                it.base = cur;
+            } else if (cur.length == 0) {
+                NSString *as = v.attributedText.string;
+                if (TSIsMinuteText(as)) {
+                    it.base = as;
+                    it.attr = v.attributedText;
+                }
             }
+            [self renderView:v item:it];
         }
-        [self renderView:v item:it];
     }
 
-    if (keys.count == 0) [self maybeScan];
+    if (keys.count == 0) {
+        [self maybeScan];
+        return YES; // 尚未找到视图时保持探测
+    }
+
+    return anyVisible;
 }
 
 #pragma mark 兜底扫描
@@ -283,6 +333,7 @@ static NSTimeInterval gLastScan = 0;
 
 - (void)scanView:(UIView *)v depth:(NSInteger)d statusBar:(BOOL)sb {
     if (d > 30) return;
+    if (TSIsIslandInternal(v)) return; // 忽略灵动岛内部组件
 
     BOOL inSB = sb || [NSStringFromClass([v class]) containsString:@"StatusBar"];
     if (inSB && [v isKindOfClass:[UILabel class]]) {
