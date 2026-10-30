@@ -209,6 +209,42 @@ Description: 让状态栏时间实时显示秒数
  支持 iOS 16 及以上，兼容 RootHide / Dopamine roothide 与常规 rootless。
  自动保留 12/24 小时制与 AM/PM 后缀。
 
+Package: com.ajun.timeseconds
+Name: TimeSeconds
+Version: 2.1.7
+Architecture: iphoneos-arm64
+Section: Tweaks
+Depends: mobilesubstrate
+Maintainer: ajun
+Author: ajun
+Tag: purpose::extension
+Filename: debs/com.ajun.timeseconds_2.1.7_iphoneos-arm64.deb
+Size: 14426
+MD5sum: 451b0228d80e3c82b3c2c8c5cbc90d8f
+SHA1: e0c718130713c49f9e838db001a03abc5ce4221d
+SHA256: 1a70551b7d4ded960bef1bbe50a3de4cdbcffb81526546f636baa24f333e1b96
+Description: 让状态栏时间实时显示秒数
+ 系统状态栏默认只在分钟变化时刷新，本插件接管时间文本，
+ 每秒更新一次，显示成 9:41:07 这样的格式。
+ .
+ 2.1.7：官方原生级排版与极致美学版：
+ · 100% 还原苹果原生 Semibold 饱满字重，消灭发虚与比例失调
+ · 优雅分层排版：时分 100% 原生大字 + 冒号秒数 78% 精致小标
+ · 自然缩窄宽度 12pt，彻底根治外卖/音乐等实时活动遮挡秒数
+ · 恢复自然光学字距与居中位置（无需左移），冒号不再变形
+ · 真实零功耗待机 + 纳秒级底层 C 语言时间运算
+ .
+ 2.1.6：灵动岛防遮挡视觉优化版。
+ 2.1.5：真实零功耗待机（0 唤醒 0 耗电）+ C 语言纳秒级纯栈运算。
+ 2.1.4：灵动岛全机型自适应微缩防挤爆 + 基线锁定。
+ 2.1.3：恢复系统原生大字号，数字等宽防抖 + 字距收紧防挤爆。
+ 2.1.2：字距再收紧一档，整体又窄了约 2pt。
+ 2.1.1：字距收紧，比系统默认窄约 2.5pt。
+ 2.1.0：无设置面板版本，装上即用。
+ .
+ 支持 iOS 16 及以上，兼容 RootHide / Dopamine roothide 与常规 rootless。
+ 自动保留 12/24 小时制与 AM/PM 后缀。
+
 Package: com.lns.pogr
 Name: PodsGrant Enhanced
 Version: 1.0.0

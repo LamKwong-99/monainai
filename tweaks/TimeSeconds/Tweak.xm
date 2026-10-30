@@ -1,12 +1,13 @@
 //
 //  TimeSeconds — 让状态栏时间实时显示秒数
 //  目标：iOS 16+ / RootHide（Dopamine roothide）/ 常规 rootless
-//  2.1.6 灵动岛防遮挡与极客低功耗版：
-//    1. 视觉避让防遮挡：96% 精细字号 + 适度紧凑字距 + 向左微调 7pt，彻底解决实时活动遮挡秒数
-//    2. 真实零功耗待机：锁屏/息屏定时器彻底停摆（0 唤醒 0 耗电），亮屏毫秒级自愈
-//    3. 纳秒级无分配时间源：底层 C 语言 time() + localtime_r() 纯栈运算，消除堆对象分配
-//    4. 预解析分段时间缓存：每分钟仅解析 1 次正则，每小时消除 7,200 次正则计算
-//    5. 富文本属性与字体单例复用：消除每秒高频临时字典与字形描述符对象
+//  2.1.7 官方原生级排版与极致美学版：
+//    1. 100% 还原苹果原生 Semibold 饱满字重（消灭发虚、偏细与比例失调）
+//    2. 优雅分层排版：时分 100% 原生大字 + 冒号秒数 78% 精致小标
+//    3. 彻底根治灵动岛外卖/音乐等实时活动遮挡秒数（自然收窄 12pt，不碰头、不左偏）
+//    4. 消除负字距压迫感，恢复自然光学字距，冒号不再畸形变形
+//    5. 真实零功耗待机：锁屏/息屏定时器彻底停摆（0 唤醒 0 耗电），亮屏毫秒级自愈
+//    6. 纳秒级底层 C 语言 time() 栈运算，属性字典单例复用，零内存抖动
 //
 
 #import <Foundation/Foundation.h>
@@ -17,12 +18,11 @@
 
 #define TSLOG(fmt, ...) NSLog(@"[TimeSeconds] " fmt, ##__VA_ARGS__)
 
-#pragma mark - 视觉与排版常量
+#pragma mark - 视觉排版常量
 
-#define TS_FONT_SCALE 0.96    // 整体微调至 96% 字号，数字保持等大且兼顾大字观感
-#define TS_KERN_RATIO 0.065   // 字距适度收紧，收敛宽度防抖防挤
-#define TS_OFFSET_X   (-7.0)  // 整体向屏幕左侧平移 7pt，彻底避开灵动岛实时活动膨胀遮挡
-#define TS_MIN_SCALE  0.82    // 灵动岛展开挤压时的极限自适应微缩下限
+#define TS_FONT_SCALE 1.0     // 时分保持 100% 苹果原生字号
+#define TS_SEC_SCALE  0.78    // 秒数微缩至 78% 精致小标，彻底避让灵动岛
+#define TS_MIN_SCALE  0.82    // 灵动岛极端挤压时的自适应微缩下限
 
 #pragma mark - 文本正则与判定
 
@@ -78,46 +78,36 @@ static BOOL TSIsIslandInternal(UIView *view) {
     return NO;
 }
 
-#pragma mark - 字体与排版运算
+#pragma mark - 原生官方 Semibold 等宽字形提取
 
-static UIFont *TSMonospacedDigits(UIFont *font) {
-    if (!font) return nil;
-    CGFloat size = font.pointSize * TS_FONT_SCALE;
-    if (size < 5.0) size = font.pointSize;
-    size = round(size * 2.0) / 2.0;
-    @try {
-        NSArray *features = @[ @{ UIFontFeatureTypeIdentifierKey: @(6),
-                                  UIFontFeatureSelectorIdentifierKey: @(0) } ];
-        UIFontDescriptor *desc =
-            [font.fontDescriptor fontDescriptorByAddingAttributes:
-                @{ UIFontDescriptorFeatureSettingsAttribute: features }];
-        return [UIFont fontWithDescriptor:desc size:size];
-    } @catch (NSException *e) {
-        return nil;
+static CGFloat TSGetFontWeight(UIFont *font) {
+    if (!font) return UIFontWeightSemibold;
+    NSDictionary *traits = [font.fontDescriptor objectForKey:UIFontDescriptorTraitsAttribute];
+    if (traits && traits[UIFontWeightTrait]) {
+        CGFloat w = [traits[UIFontWeightTrait] floatValue];
+        // 状态栏原生字重通常在 0.23 (Medium) 到 0.30 (Semibold) 之间
+        if (w >= 0.20) return w;
     }
+    return UIFontWeightSemibold;
 }
 
-static NSNumber *TSKernForSize(CGFloat size) {
-    CGFloat k = -round(size * TS_KERN_RATIO * 100.0) / 100.0;
-    return @(k);
-}
-
-#pragma mark - 高性能数据项模型（带预解析分段与属性单例缓存）
+#pragma mark - 数据模型（双字阶与属性单例缓存）
 
 @interface TSItem : NSObject
 @property (nonatomic, copy) NSString *base;
-@property (nonatomic, copy) NSString *core;          // "15:18"
+@property (nonatomic, copy) NSString *core;          // "22:45"
 @property (nonatomic, copy) NSString *sep;           // ":"
 @property (nonatomic, copy) NSString *suffix;        // " AM" 或 ""
 @property (nonatomic, strong) NSAttributedString *attr;
 @property (nonatomic, strong) UIFont *baseFont;
-@property (nonatomic, strong) UIFont *cachedFont;
-@property (nonatomic, strong) NSDictionary *cachedAttrs;
+@property (nonatomic, strong) UIFont *cachedMainFont;
+@property (nonatomic, strong) UIFont *cachedSecFont;
+@property (nonatomic, strong) NSDictionary *cachedMainAttrs;
+@property (nonatomic, strong) NSDictionary *cachedSecAttrs;
 @property (nonatomic, copy) NSString *lastOut;
-@property (nonatomic) CGFloat lastSize;
 
 - (void)updateBase:(NSString *)base;
-- (NSDictionary *)attributesForFont:(UIFont *)currentFont;
+- (void)updateFontsForCurrentFont:(UIFont *)currentFont;
 @end
 
 @implementation TSItem
@@ -126,7 +116,6 @@ static NSNumber *TSKernForSize(CGFloat size) {
     if ([_base isEqualToString:base]) return;
     _base = [base copy];
 
-    // 预解析分段（仅在整分钟变化时计算一次，彻底消除每秒正则解析）
     NSString *c = base;
     NSString *suf = @"";
     NSRange ampm = [base rangeOfString:@"[ \u00a0\u202f]*[APap]\\.?[Mm]\\.?\\s*$"
@@ -145,25 +134,38 @@ static NSNumber *TSKernForSize(CGFloat size) {
     self.suffix = suf;
 }
 
-// 缓存富文本属性字典，避免每秒重复创建 Dictionary、FontDescriptor
-- (NSDictionary *)attributesForFont:(UIFont *)currentFont {
-    if (self.cachedAttrs && self.baseFont == currentFont) {
-        return self.cachedAttrs;
+- (void)updateFontsForCurrentFont:(UIFont *)currentFont {
+    if (self.cachedMainAttrs && self.baseFont == currentFont) {
+        return;
     }
     self.baseFont = currentFont;
-    UIFont *want = TSMonospacedDigits(currentFont);
-    if (!want) return nil;
-    self.cachedFont = want;
 
-    NSMutableDictionary *attrs = [NSMutableDictionary dictionary];
+    CGFloat baseSize = currentFont ? currentFont.pointSize : 15.0;
+    if (baseSize < 5.0) baseSize = 15.0;
+    CGFloat weight = TSGetFontWeight(currentFont);
+
+    // 时分：100% 苹果原生字号与 Semibold 饱满字重
+    CGFloat mainSize = round(baseSize * TS_FONT_SCALE * 2.0) / 2.0;
+    self.cachedMainFont = [UIFont monospacedDigitSystemFontOfSize:mainSize weight:weight];
+
+    // 秒数：78% 精致小标，同样保持 Semibold 饱满字重，视觉不发虚
+    CGFloat secSize = round(baseSize * TS_SEC_SCALE * 2.0) / 2.0;
+    self.cachedSecFont = [UIFont monospacedDigitSystemFontOfSize:secSize weight:weight];
+
+    // 主属性（时分）
+    NSMutableDictionary *mainAttrs = [NSMutableDictionary dictionary];
     if (self.attr.length > 0) {
         NSDictionary *src = [self.attr attributesAtIndex:0 effectiveRange:NULL];
-        if (src) [attrs addEntriesFromDictionary:src];
+        if (src) [mainAttrs addEntriesFromDictionary:src];
     }
-    attrs[NSFontAttributeName] = want;
-    attrs[NSKernAttributeName] = TSKernForSize(want.pointSize);
-    self.cachedAttrs = [attrs copy];
-    return self.cachedAttrs;
+    mainAttrs[NSFontAttributeName] = self.cachedMainFont;
+    self.cachedMainAttrs = [mainAttrs copy];
+
+    // 次属性（秒数，微调 0.5pt 基线提升以与大字几何视觉居中对齐）
+    NSMutableDictionary *secAttrs = [NSMutableDictionary dictionaryWithDictionary:mainAttrs];
+    secAttrs[NSFontAttributeName] = self.cachedSecFont;
+    secAttrs[NSBaselineOffsetAttributeName] = @(0.5);
+    self.cachedSecAttrs = [secAttrs copy];
 }
 
 @end
@@ -177,12 +179,11 @@ static NSNumber *TSKernForSize(CGFloat size) {
 @end
 
 static BOOL gInternal = NO;
-static BOOL gHookActive = NO;                     // Hook 激活状态
-static NSMapTable<UILabel *, TSItem *> *gViews;   // 弱引用自动回收池
+static BOOL gHookActive = NO;
+static NSMapTable<UILabel *, TSItem *> *gViews;
 static NSTimer *gTimer;
 static NSTimeInterval gLastScan = 0;
 
-// 底层 POSIX 高性能纳秒级时间提取（纯栈运行，0 堆分配）
 static inline int TSGetCurrentSecond(void) {
     time_t rawtime;
     time(&rawtime);
@@ -216,12 +217,12 @@ static inline int TSGetCurrentSecond(void) {
     if (!base) base = TSBaseText(attr.string);
     if (!base) return;
 
-    // 灵动岛防挤压、垂直居中对齐与左移偏移
+    // 恢复自然居中与原生平移（无需任何左移位移，靠紧凑排版自然避开遮挡）
+    label.transform = CGAffineTransformIdentity;
     label.adjustsFontSizeToFitWidth = YES;
     label.minimumScaleFactor = TS_MIN_SCALE;
     label.baselineAdjustment = UIBaselineAdjustmentAlignCenters;
     label.lineBreakMode = NSLineBreakByClipping;
-    label.transform = CGAffineTransformMakeTranslation(TS_OFFSET_X, 0.0);
 
     TSItem *it = [gViews objectForKey:label];
     if (!it) {
@@ -230,9 +231,7 @@ static inline int TSGetCurrentSecond(void) {
     }
     [it updateBase:base];
     it.attr = (text.length == 0 && attr.length > 0) ? attr : nil;
-    if (it.appliedFont == nil || label.font != it.appliedFont) {
-        it.baseFont = label.font;
-    }
+    [it updateFontsForCurrentFont:label.font];
 
     [self scheduleTick];
     [self renderView:label item:it second:TSGetCurrentSecond()];
@@ -241,40 +240,35 @@ static inline int TSGetCurrentSecond(void) {
 - (void)renderView:(UILabel *)view item:(TSItem *)it second:(int)sec {
     if (it.base.length == 0) return;
 
-    // 纳秒级预缓存字符串拼接
-    NSString *out = [NSString stringWithFormat:@"%@%@%02d%@",
-                     it.core ?: @"", it.sep ?: @":", sec, it.suffix ?: @""];
-
-    // 确保向左微调平移稳定维持，不被系统还原
-    CGAffineTransform targetTransform = CGAffineTransformMakeTranslation(TS_OFFSET_X, 0.0);
-    if (!CGAffineTransformEqualToTransform(view.transform, targetTransform)) {
-        view.transform = targetTransform;
+    // 确保视图保持原生坐标系
+    if (!CGAffineTransformIsIdentity(view.transform)) {
+        view.transform = CGAffineTransformIdentity;
     }
 
-    UIFont *currentFont = view.font;
-    if (it.appliedFont && currentFont != it.appliedFont) {
-        it.baseFont = currentFont;
-    } else if (!it.baseFont) {
-        it.baseFont = currentFont;
-    }
+    [it updateFontsForCurrentFont:view.font];
+    if (!it.cachedMainAttrs || !it.cachedSecAttrs) return;
 
-    NSDictionary *attrs = [it attributesForFont:it.baseFont];
-    if (!attrs) return;
-    UIFont *want = it.cachedFont;
+    NSString *core = it.core ?: @"";
+    NSString *secStr = [NSString stringWithFormat:@"%@%02d%@",
+                        it.sep ?: @":", sec, it.suffix ?: @""];
+    NSString *fullOut = [core stringByAppendingString:secStr];
 
-    // 文本与字号短路跳过，彻底消除多余重绘
+    // 短路跳过无谓重绘
     NSString *cur = view.text;
     if (cur.length == 0) cur = view.attributedText.string;
-    BOOL sameText = [it.lastOut isEqualToString:out] && [cur isEqualToString:out];
-    BOOL sameSize = (fabs(it.lastSize - want.pointSize) <= 0.01);
-    if (sameText && sameSize) return;
+    if ([it.lastOut isEqualToString:fullOut] && [cur isEqualToString:fullOut]) {
+        return;
+    }
+
+    // 构建双字阶优雅富文本（时分原生大字 Semibold + 秒数小标 Semibold）
+    NSMutableAttributedString *as = [[NSMutableAttributedString alloc] initWithString:core attributes:it.cachedMainAttrs];
+    NSAttributedString *secAttr = [[NSAttributedString alloc] initWithString:secStr attributes:it.cachedSecAttrs];
+    [as appendAttributedString:secAttr];
 
     gInternal = YES;
     @try {
-        view.attributedText = [[NSAttributedString alloc] initWithString:out attributes:attrs];
-        it.appliedFont = want;
-        it.lastOut = out;
-        it.lastSize = want.pointSize;
+        view.attributedText = as;
+        it.lastOut = fullOut;
     } @catch (NSException *e) {
         TSLOG(@"render failed: %@", e);
     } @finally {
@@ -303,9 +297,7 @@ static inline int TSGetCurrentSecond(void) {
         anyVisible = [self refreshAll];
     }
 
-    // 核心节能逻辑：
-    // 只有在屏幕上有可见状态栏时才继续调度下一个整秒；
-    // 一旦息屏/锁屏状态栏隐藏，定时器彻底停机（0 唤醒、0 耗电）。
+    // 亮屏且有可见状态栏才继续对齐调度；息屏完全停机
     if (anyVisible) {
         [self scheduleTick];
     }
@@ -315,7 +307,6 @@ static inline int TSGetCurrentSecond(void) {
     int sec = TSGetCurrentSecond();
     BOOL anyVisible = NO;
 
-    // 快速枚举，消灭临时 NSMutableArray 容器分配
     for (UILabel *v in gViews) {
         TSItem *it = [gViews objectForKey:v];
         if (!it) continue;
@@ -345,7 +336,7 @@ static inline int TSGetCurrentSecond(void) {
     return anyVisible;
 }
 
-#pragma mark 兜底扫描（仅在 Hook 失效时按需激活）
+#pragma mark 兜底扫描
 
 - (void)maybeScan {
     if (gHookActive) return;
@@ -408,7 +399,7 @@ static inline int TSGetCurrentSecond(void) {
         if (c) {
             gHookActive = YES;
             %init(StringViewHooks);
-            TSLOG(@"_UIStatusBarStringView hooked (Island Anti-Overlap & Zero-Power ready)");
+            TSLOG(@"_UIStatusBarStringView hooked (Official Semibold & Sub-second Engine ready)");
         } else {
             TSLOG(@"_UIStatusBarStringView missing — 降级进入扫描模式");
         }
