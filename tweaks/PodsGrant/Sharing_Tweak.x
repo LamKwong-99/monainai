@@ -11,6 +11,12 @@
 @interface PRXCardContentView : UIView
 @end
 
+@interface PRXCardBackgroundView : UIView
+@end
+
+@interface PRXCardContainerView : UIView
+@end
+
 @interface PRXFlowConfiguration : NSObject
 @end
 
@@ -101,6 +107,16 @@ static inline uint16_t fast_patch_pid(uint16_t orig) {
 
 static NSTimeInterval s_last_haptic_time = 0;
 
+static inline UIUserInterfaceStyle PGS_CurrentSystemStyle(void) {
+	if (@available(iOS 13.0, *)) {
+		UIUserInterfaceStyle style = [UIScreen mainScreen].traitCollection.userInterfaceStyle;
+		if (style == UIUserInterfaceStyleDark || style == UIUserInterfaceStyleLight) {
+			return style;
+		}
+	}
+	return UIUserInterfaceStyleUnspecified;
+}
+
 static void PGS_TriggerHapticFeedback(void) {
 	NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
 	if (now - s_last_haptic_time < 2.0) {
@@ -114,12 +130,80 @@ static void PGS_TriggerHapticFeedback(void) {
 	});
 }
 
-%hook PRXCardContentView
+// 1. 防御毛玻璃背景板冷启动白闪（第 0 帧锁定系统真实外观）
+%hook PRXCardBackgroundView
+
+- (instancetype)initWithFrame:(CGRect)frame {
+	self = %orig(frame);
+	if (self) {
+		UIUserInterfaceStyle s = PGS_CurrentSystemStyle();
+		if (s != UIUserInterfaceStyleUnspecified) {
+			self.overrideUserInterfaceStyle = s;
+		}
+	}
+	return self;
+}
 
 - (void)didMoveToWindow {
 	%orig;
 	if (self.window) {
-		// 弹窗登场瞬间伴随轻微清脆的 Taptic Engine 线性马达震动（不锁死深色，完全跟随系统浅色/深色模式切换）
+		UIUserInterfaceStyle s = PGS_CurrentSystemStyle();
+		if (s != UIUserInterfaceStyleUnspecified) {
+			self.overrideUserInterfaceStyle = s;
+		}
+	}
+}
+
+%end
+
+// 2. 防御卡片外层容器冷启动白闪
+%hook PRXCardContainerView
+
+- (instancetype)initWithFrame:(CGRect)frame {
+	self = %orig(frame);
+	if (self) {
+		UIUserInterfaceStyle s = PGS_CurrentSystemStyle();
+		if (s != UIUserInterfaceStyleUnspecified) {
+			self.overrideUserInterfaceStyle = s;
+		}
+	}
+	return self;
+}
+
+- (void)didMoveToWindow {
+	%orig;
+	if (self.window) {
+		UIUserInterfaceStyle s = PGS_CurrentSystemStyle();
+		if (s != UIUserInterfaceStyleUnspecified) {
+			self.overrideUserInterfaceStyle = s;
+		}
+	}
+}
+
+%end
+
+// 3. 内容层自适应与触觉反馈
+%hook PRXCardContentView
+
+- (instancetype)initWithFrame:(CGRect)frame {
+	self = %orig(frame);
+	if (self) {
+		UIUserInterfaceStyle s = PGS_CurrentSystemStyle();
+		if (s != UIUserInterfaceStyleUnspecified) {
+			self.overrideUserInterfaceStyle = s;
+		}
+	}
+	return self;
+}
+
+- (void)didMoveToWindow {
+	%orig;
+	if (self.window) {
+		UIUserInterfaceStyle s = PGS_CurrentSystemStyle();
+		if (s != UIUserInterfaceStyleUnspecified) {
+			self.overrideUserInterfaceStyle = s;
+		}
+		// 弹窗登场瞬间伴随轻微清脆的 Taptic Engine 线性马达震动
 		PGS_TriggerHapticFeedback();
 	}
 }
@@ -134,7 +218,16 @@ static void PGS_TriggerHapticFeedback(void) {
 
 %end
 
+// 4. 配置层从实例化 init 开始预置支持深色模式
 %hook PRXFlowConfiguration
+
+- (instancetype)init {
+	self = %orig;
+	if (self) {
+		[self setSupportsDarkMode:YES];
+	}
+	return self;
+}
 
 - (void)setSupportsDarkMode:(BOOL)arg1 {
 	%orig(YES);
