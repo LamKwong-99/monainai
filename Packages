@@ -293,11 +293,12 @@ Depends: mobilesubstrate
 Maintainer: ajun
 Author: ajun
 Tag: purpose::extension
+Installed-Size: 204
 Filename: debs/com.ajun.timeseconds_2.1.9_iphoneos-arm64.deb
-Size: 14530
-MD5sum: e507876c074c62a5eb506cb59cd940d7
-SHA1: a13621b77777b6b080fd54e5fe3bf63164b33603
-SHA256: 4d3a79c643d760415f665d098404d2fd38cfad564d429402faebad5084093bbe
+Size: 14540
+MD5sum: ea0a9bcb4d73503b12dbbccf57c5aaf3
+SHA1: d026df0b0a50789c18245349748f4224941b1a4b
+SHA256: bca82adccf0c195c767b9c107fd38137f2bbb17b0151595a1058b7a0ea6568ed
 Description: 让状态栏时间实时显示秒数
  系统状态栏默认只在分钟变化时刷新，本插件接管时间文本，
  每秒更新一次，显示成 9:41:07 这样的格式。
@@ -476,10 +477,10 @@ Icon: https://raw.githubusercontent.com/LNSSPsd/PodsGrant/main/podsgrantsettings
 Tag: purpose::extension
 Installed-Size: 520
 Filename: debs/com.lns.pogr_1.0.6_iphoneos-arm64.deb
-Size: 61974
-MD5sum: 1f2cecb055ff99af81b41f5c68f8a037
-SHA1: d5e28477156e246624e23069b9092ba42bb6046f
-SHA256: e40b7f6563601a8f5181085030696c01b7a2a9507a83e4223f145a6e803d194e
+Size: 61924
+MD5sum: 9de56beba0216d4875f54544257b3ac2
+SHA1: f66151033f97f9744af327202406839963ece12e
+SHA256: 58167b45cc858450e6aef7089ec3dd4f050b5bfbf9ffcf796f4571ab74d5918d
 Description: 优化版 AirPods/Beats 兼容插件：
  · 消除冷启动白色闪光：深度重构毛玻璃背景与外壳容器第 0 帧外观锁定，彻底解决久未开耳机冷启动时闪一下白色的问题
  · 优雅自适应深浅色：开盖弹窗完全跟随 iOS 16 系统模式，白天优雅纯白，夜间深邃高级黑
