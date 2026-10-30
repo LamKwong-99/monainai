@@ -4,6 +4,17 @@
 #include <notify.h>
 #include "general.h"
 
+// 前向类与接口声明（使 Clang 明确继承关系自 UIView）
+@interface PRXTextView : UITextView
+- (void)setTitleText:(id)titleView;
+@end
+
+@interface PRXCardContentView : UIView
+@end
+
+@interface PRXFlowConfiguration : NSObject
+@end
+
 static struct podsgrant_settings *settings = NULL;
 static int g_unlock_token = 0;
 
@@ -45,7 +56,6 @@ static inline uint16_t fast_patch_pid(uint16_t orig) {
 	uint16_t patched = fast_patch_pid(orig_pid);
 
 	if (patched && patched != orig_pid) {
-		// 优化：零中间缓冲区分配，使用可变数据原地修改，消除 malloc/memcpy/free 双重开销
 		NSMutableData *mutPayload = [payload mutableCopy];
 		uint16_t *target_ptr = (uint16_t *)((uint8_t *)mutPayload.mutableBytes + 5);
 		*target_ptr = patched;
@@ -81,10 +91,6 @@ static inline uint16_t fast_patch_pid(uint16_t orig) {
 // ==========================================
 %group darkpods_hook_grp
 
-@interface PRXTextView : UITextView
-- (void)setTitleText:(id)titleView;
-@end
-
 static void PGS_FixViewContrastRecursively(UIView *view) {
 	if (!view) return;
 	for (UIView *sub in view.subviews) {
@@ -92,7 +98,7 @@ static void PGS_FixViewContrastRecursively(UIView *view) {
 			UIImageView *iv = (UIImageView *)sub;
 			CGSize sz = iv.bounds.size;
 			CGSize imgSz = iv.image ? iv.image.size : CGSizeZero;
-			// 仅针对小图标（如 L / R 标识、充电盒微缩图标），排除中间巨大的耳机主展示大图
+			// 仅针对状态小图标（如 L / R 标识、充电盒微图标），排除中间巨大的耳机主展示大图
 			BOOL isSmallIcon = (sz.width > 0 && sz.width < 70 && sz.height < 70) ||
 			                   (imgSz.width > 0 && imgSz.width < 70 && imgSz.height < 70);
 			if (isSmallIcon) {
@@ -128,14 +134,14 @@ static void PGS_FixViewContrastRecursively(UIView *view) {
 - (void)layoutSubviews {
 	%orig;
 	if (self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) {
-		PGS_FixViewContrastRecursively(self);
+		PGS_FixViewContrastRecursively((UIView *)self);
 	}
 }
 
 - (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
 	%orig;
 	if (self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) {
-		PGS_FixViewContrastRecursively(self);
+		PGS_FixViewContrastRecursively((UIView *)self);
 	}
 }
 
@@ -183,7 +189,6 @@ static void PGS_FixViewContrastRecursively(UIView *view) {
 		PGS_initOSVersion();
 		reload_settings_if_needed();
 
-		// 监听首次解锁通知：解决开机尚未解密 /var/mobile 导致配置读取失败后无法弹窗的问题
 		notify_register_dispatch("com.apple.mobile.keybagd.first_unlock", &g_unlock_token, dispatch_get_main_queue(), ^(int token) {
 			reload_settings_if_needed();
 		});
