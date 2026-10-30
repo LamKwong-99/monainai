@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Jailbreak Tweak Repo</title>
+  <link rel="icon" type="image/png" href="CydiaIcon.png">
+  <style>
+    :root {
+      --bg: #f2f2f7;
+      --card-bg: #ffffff;
+      --text: #1c1c1e;
+      --text-sec: #8e8e93;
+      --tint: #007aff;
+      --tint-hover: #0056b3;
+      --border: #e5e5ea;
+      --tag-bg: #e5f1ff;
+      --tag-color: #007aff;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #000000;
+        --card-bg: #1c1c1e;
+        --text: #ffffff;
+        --text-sec: #8e8e93;
+        --tint: #0a84ff;
+        --tint-hover: #409cff;
+        --border: #2c2c2e;
+        --tag-bg: #1a2d42;
+        --tag-color: #409cff;
+      }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px 16px 48px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      width: 100%;
+      max-width: 580px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .repo-icon {
+      width: 88px;
+      height: 88px;
+      border-radius: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      margin-bottom: 14px;
+      background: var(--card-bg);
+    }
+    .repo-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .repo-desc {
+      font-size: 14px;
+      color: var(--text-sec);
+      margin-bottom: 18px;
+    }
+    .actions-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-primary {
+      background: var(--tint);
+      color: #fff;
+    }
+    .btn-primary:hover {
+      background: var(--tint-hover);
+    }
+    .btn-secondary {
+      background: var(--card-bg);
+      color: var(--tint);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover {
+      background: rgba(0, 122, 255, 0.08);
+    }
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-sec);
+      margin: 20px 0 8px 8px;
+    }
+    .card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 18px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+      margin-bottom: 16px;
+    }
+    .tweak-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+    .tweak-title {
+      font-size: 17px;
+      font-weight: 600;
+    }
+    .tweak-ver {
+      font-size: 12px;
+      background: var(--tag-bg);
+      color: var(--tag-color);
+      padding: 3px 8px;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+    .tweak-desc {
+      font-size: 14px;
+      color: var(--text-sec);
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+    .tweak-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .tag {
+      font-size: 11px;
+      background: var(--border);
+      color: var(--text);
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 32px;
+      font-size: 12px;
+      color: var(--text-sec);
+    }
+    .url-box {
+      display: flex;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 6px 10px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      font-family: monospace;
+      font-size: 13px;
+      color: var(--text);
+    }
+    .copy-btn {
+      background: none;
+      border: none;
+      color: var(--tint);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <img src="CydiaIcon.png" alt="Icon" class="repo-icon">
+      <h1 class="repo-title">越狱插件源</h1>
+      <p class="repo-desc">支持 Sileo / Zebra / Dopamine Rootless & RootHide</p>
+      
+      <div class="url-box">
+        <span id="repo-url">加载中...</span>
+        <button class="copy-btn" onclick="copyRepoUrl()">复制</button>
+      </div>
+
+      <div class="actions-grid">
+        <a id="btn-sileo" class="btn btn-primary" href="#">添加到 Sileo</a>
+        <a id="btn-zebra" class="btn btn-secondary" href="#">添加到 Zebra</a>
+      </div>
+    </div>
+
+    <div class="section-title">源内插件</div>
+    <div class="card">
+      <div class="tweak-header">
+        <div>
+          <div class="tweak-title">TimeSeconds</div>
+          <div style="font-size:12px;color:var(--text-sec);margin-top:2px;">com.ajun.timeseconds</div>
+        </div>
+        <span class="tweak-ver">v2.1.2</span>
+      </div>
+      <p class="tweak-desc">
+        让 iOS 状态栏时间实时精确显示秒数（如 9:41:07）。
+        支持等宽数字抗抖动排版、自适应 12/24 小时制与负字距压缩防截断。装上即用，无多余设置。
+      </p>
+      <div class="tweak-tags">
+        <span class="tag">iOS 16+</span>
+        <span class="tag">arm64 / arm64e</span>
+        <span class="tag">Rootless</span>
+        <span class="tag">RootHide</span>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <a class="btn btn-secondary" style="flex:1;" href="debs/com.ajun.timeseconds_2.1.2_iphoneos-arm64.deb" download>下载 2.1.2 DEB</a>
+      </div>
+    </div>
+
+    <div class="section-title">手动添加指南</div>
+    <div class="card" style="font-size:13px;line-height:1.7;color:var(--text-sec);">
+      <p>1. 打开越狱包管理器（<strong>Sileo</strong> 或 <strong>Zebra</strong>）。</p>
+      <p>2. 进入底部的「软件源」页面，点击右上角的「+」加号。</p>
+      <p>3. 粘贴上面的源地址并确认添加。</p>
+      <p>4. 刷新完成后即可在源中搜索并安装 <code>TimeSeconds</code>。</p>
+    </div>
+
+    <div class="footer">
+      Powered by GitHub Pages &amp; Theos Action
+    </div>
+  </div>
+
+  <script>
+    const currentUrl = window.location.href.split('#')[0].split('?')[0];
+    document.getElementById('repo-url').innerText = currentUrl;
+    document.getElementById('btn-sileo').href = 'sileo://source/' + encodeURIComponent(currentUrl);
+    document.getElementById('btn-zebra').href = 'zbra://sources/add/' + encodeURIComponent(currentUrl);
+
+    function copyRepoUrl() {
+      navigator.clipboard.writeText(currentUrl).then(() => {
+        alert('源地址已复制到剪贴板！\n' + currentUrl);
+      }).catch(() => {
+        prompt('请手动复制源地址：', currentUrl);
+      });
+    }
+  </script>
+</body>
+</html>
