@@ -64,7 +64,7 @@ killall -9 SpringBoard
 只有源码里两个常量：
 
 ```objc
-#define TS_FONT_SCALE 0.95   // 字号倍率，1.0 = 和系统原生一样大
+#define TS_FONT_SCALE 1.0    // 字号倍率，1.0 = 和系统原生一样大（已恢复 100% 原生字号）
 #define TS_KERN_RATIO 0.05   // 字距收紧比例，0 = 系统默认
 ```
 
