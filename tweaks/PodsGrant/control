@@ -1,13 +1,13 @@
 Package: com.lns.pogr
 Name: PodsGrant Enhanced
-Version: 1.0.6
+Version: 1.0.7
 Architecture: iphoneos-arm64
 Description: 优化版 AirPods/Beats 兼容插件：
- · 消除冷启动白色闪光：深度重构毛玻璃背景与外壳容器第 0 帧外观锁定，彻底解决久未开耳机冷启动时闪一下白色的问题
+ · 彻底杜绝冷启动白闪（终极修复）：补全 SharingViewService 动态库注入链，从根源顶级 UIWindow 与 SlideUp 转场动画控制层强制锁定系统模式，0毫秒消除所有白色毛玻璃卡顿
+ · 毫秒级性能释放：弹窗渲染服务剔除磁盘 I/O 阻塞，冷启动极速秒弹
  · 优雅自适应深浅色：开盖弹窗完全跟随 iOS 16 系统模式，白天优雅纯白，夜间深邃高级黑
  · Taptic Engine 线性马达震感：开盖弹窗登场瞬间伴随清脆微触感反馈（2秒防抖）
  · 4 槽位环形广播微缓存：多设备环境杜绝缓存抖动，弹窗动画 120Hz 丝滑无丢帧
- · 彻底解决开机/重启后无弹窗问题（首次解锁自动重载配置）
  · 包含全套视网膜高清设置图标，完美兼容 iOS 15-16 Rootless / RootHide 环境
 Maintainer: LamKwong <abc999mn@163.com>
 Author: LNSSPsd & iCraze & LamKwong

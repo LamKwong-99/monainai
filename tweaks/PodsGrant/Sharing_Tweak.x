@@ -1,5 +1,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import <objc/runtime.h>
+#import <objc/message.h>
 #include <mach-o/dyld.h>
 #include <notify.h>
 #include "general.h"
@@ -15,6 +17,9 @@
 @end
 
 @interface PRXCardContainerView : UIView
+@end
+
+@interface PRXCardSlideUpPresentationController : UIPresentationController
 @end
 
 @interface PRXFlowConfiguration : NSObject
@@ -103,20 +108,41 @@ static inline uint16_t fast_patch_pid(uint16_t orig) {
 %end
 
 // ==========================================
-// iOS 16 质感增强：自适应系统深浅色模式 + Taptic Engine 触觉反馈
+// iOS 16 质感增强：自适应系统深浅色模式 + 彻底消灭冷启动白闪 + Taptic 触觉反馈
 // ==========================================
 %group darkpods_hook_grp
 
 static NSTimeInterval s_last_haptic_time = 0;
 
-static inline UIUserInterfaceStyle PGS_CurrentSystemStyle(void) {
-	if (@available(iOS 13.0, *)) {
-		UIUserInterfaceStyle style = [UIScreen mainScreen].traitCollection.userInterfaceStyle;
-		if (style == UIUserInterfaceStyleDark || style == UIUserInterfaceStyleLight) {
-			return style;
+static inline BOOL PGS_IsSystemDarkMode(void) {
+	// 方式 1: 直接向 UIKitServices 查询全局深色模式模式值（冷启动 0 毫秒即生效）
+	static Class s_styleModeCls = nil;
+	static dispatch_once_t s_once;
+	dispatch_once(&s_once, ^{
+		s_styleModeCls = objc_getClass("UISUserInterfaceStyleMode");
+	});
+	if (s_styleModeCls) {
+		id modeObj = [[s_styleModeCls alloc] init];
+		if (modeObj) {
+			long long mode = 0;
+			@try {
+				mode = ((long long (*)(id, SEL))objc_msgSend)(modeObj, sel_registerName("mode"));
+			} @catch (id ex) {}
+			if (mode == 2) return YES; // 2 = Dark Mode
+			if (mode == 1) return NO;  // 1 = Light Mode
 		}
 	}
-	return UIUserInterfaceStyleUnspecified;
+	// 方式 2: 屏幕/当前环境兜底
+	if (@available(iOS 13.0, *)) {
+		UIUserInterfaceStyle s = [UIScreen mainScreen].traitCollection.userInterfaceStyle;
+		if (s == UIUserInterfaceStyleDark) return YES;
+		if (s == UIUserInterfaceStyleLight) return NO;
+	}
+	return NO;
+}
+
+static inline UIUserInterfaceStyle PGS_CurrentSystemStyle(void) {
+	return PGS_IsSystemDarkMode() ? UIUserInterfaceStyleDark : UIUserInterfaceStyleLight;
 }
 
 static void PGS_TriggerHapticFeedback(void) {
@@ -132,16 +158,51 @@ static void PGS_TriggerHapticFeedback(void) {
 	});
 }
 
-// 1. 防御毛玻璃背景板冷启动白闪（第 0 帧锁定系统真实外观）
+// 1. 根源防御：从顶级 UIWindow 创建瞬间锁定外观，所有子视图/毛玻璃从分配内存第一帧即为深色
+%hook UIWindow
+
+- (instancetype)initWithFrame:(CGRect)frame {
+	self = %orig(frame);
+	if (self) {
+		self.overrideUserInterfaceStyle = PGS_CurrentSystemStyle();
+	}
+	return self;
+}
+
+- (instancetype)initWithWindowScene:(id)scene {
+	self = %orig(scene);
+	if (self) {
+		self.overrideUserInterfaceStyle = PGS_CurrentSystemStyle();
+	}
+	return self;
+}
+
+- (void)makeKeyAndVisible {
+	self.overrideUserInterfaceStyle = PGS_CurrentSystemStyle();
+	%orig;
+}
+
+%end
+
+// 2. 转场动画防御：滑入动画开始前，锁定被呈现控制器及外壳容器
+%hook PRXCardSlideUpPresentationController
+
+- (void)presentationTransitionWillBegin {
+	UIUserInterfaceStyle targetStyle = PGS_CurrentSystemStyle();
+	self.presentedViewController.overrideUserInterfaceStyle = targetStyle;
+	self.containerView.overrideUserInterfaceStyle = targetStyle;
+	%orig;
+}
+
+%end
+
+// 3. 毛玻璃背景板防御：杜绝浅色毛玻璃被创建和绘制
 %hook PRXCardBackgroundView
 
 - (instancetype)initWithFrame:(CGRect)frame {
 	self = %orig(frame);
 	if (self) {
-		UIUserInterfaceStyle s = PGS_CurrentSystemStyle();
-		if (s != UIUserInterfaceStyleUnspecified) {
-			self.overrideUserInterfaceStyle = s;
-		}
+		self.overrideUserInterfaceStyle = PGS_CurrentSystemStyle();
 	}
 	return self;
 }
@@ -149,25 +210,19 @@ static void PGS_TriggerHapticFeedback(void) {
 - (void)didMoveToWindow {
 	%orig;
 	if (self.window) {
-		UIUserInterfaceStyle s = PGS_CurrentSystemStyle();
-		if (s != UIUserInterfaceStyleUnspecified) {
-			self.overrideUserInterfaceStyle = s;
-		}
+		self.overrideUserInterfaceStyle = PGS_CurrentSystemStyle();
 	}
 }
 
 %end
 
-// 2. 防御卡片外层容器冷启动白闪
+// 4. 外层容器防御
 %hook PRXCardContainerView
 
 - (instancetype)initWithFrame:(CGRect)frame {
 	self = %orig(frame);
 	if (self) {
-		UIUserInterfaceStyle s = PGS_CurrentSystemStyle();
-		if (s != UIUserInterfaceStyleUnspecified) {
-			self.overrideUserInterfaceStyle = s;
-		}
+		self.overrideUserInterfaceStyle = PGS_CurrentSystemStyle();
 	}
 	return self;
 }
@@ -175,25 +230,19 @@ static void PGS_TriggerHapticFeedback(void) {
 - (void)didMoveToWindow {
 	%orig;
 	if (self.window) {
-		UIUserInterfaceStyle s = PGS_CurrentSystemStyle();
-		if (s != UIUserInterfaceStyleUnspecified) {
-			self.overrideUserInterfaceStyle = s;
-		}
+		self.overrideUserInterfaceStyle = PGS_CurrentSystemStyle();
 	}
 }
 
 %end
 
-// 3. 内容层自适应与触觉反馈
+// 5. 内容层与触觉反馈
 %hook PRXCardContentView
 
 - (instancetype)initWithFrame:(CGRect)frame {
 	self = %orig(frame);
 	if (self) {
-		UIUserInterfaceStyle s = PGS_CurrentSystemStyle();
-		if (s != UIUserInterfaceStyleUnspecified) {
-			self.overrideUserInterfaceStyle = s;
-		}
+		self.overrideUserInterfaceStyle = PGS_CurrentSystemStyle();
 	}
 	return self;
 }
@@ -201,10 +250,7 @@ static void PGS_TriggerHapticFeedback(void) {
 - (void)didMoveToWindow {
 	%orig;
 	if (self.window) {
-		UIUserInterfaceStyle s = PGS_CurrentSystemStyle();
-		if (s != UIUserInterfaceStyleUnspecified) {
-			self.overrideUserInterfaceStyle = s;
-		}
+		self.overrideUserInterfaceStyle = PGS_CurrentSystemStyle();
 		// 弹窗登场瞬间伴随轻微清脆的 Taptic Engine 线性马达震动
 		PGS_TriggerHapticFeedback();
 	}
@@ -220,7 +266,7 @@ static void PGS_TriggerHapticFeedback(void) {
 
 %end
 
-// 4. 配置层从实例化 init 开始预置支持深色模式
+// 6. 配置层从实例化 init 开始预置支持深色模式
 %hook PRXFlowConfiguration
 
 - (instancetype)init {
@@ -259,12 +305,13 @@ static void PGS_TriggerHapticFeedback(void) {
 	uint32_t len = sizeof(exec_path);
 	_NSGetExecutablePath(exec_path, &len);
 
-	// 1. 若注入目标为弹窗渲染服务 (SharingViewService)，激活极简深色模式与 Taptic 触觉反馈
+	// 1. 若注入目标为弹窗渲染服务 (SharingViewService)，激活完全消除白闪的深色模式与触觉反馈
 	if (strstr(exec_path, "SharingViewService") != NULL) {
 		%init(darkpods_hook_grp);
+		return; // 立即返回！绝不在弹窗进程中进行多余的文件读写或通知监听，释放 100% 主线程算力
 	}
 
-	// 2. 仅对非 bluetoothd 进程（如 sharingd, SharingViewService, SpringBoard）初始化
+	// 2. 仅对非 bluetoothd 进程（如 sharingd, SpringBoard）初始化
 	if (memcmp(exec_path, "/usr/sbin/bluetoothd", 21) != 0) {
 		PGS_initOSVersion();
 		reload_settings_if_needed();
