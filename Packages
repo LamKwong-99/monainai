@@ -153,10 +153,10 @@ Author: ajun
 Tag: purpose::extension
 Installed-Size: 204
 Filename: debs/com.ajun.timeseconds_2.1.5_iphoneos-arm64.deb
-Size: 14330
-MD5sum: cb32f868f97b4b24c41e17970979b00a
-SHA1: 63050993f6306dd93a1f4107a4cf748c9c7a9272
-SHA256: d22e2f898e77749d5503819f6737e496bea87388107ce8098d29f2b56eb80792
+Size: 14354
+MD5sum: 26c17095be0722b0b2be0408916990ae
+SHA1: 26aef679365ca12bf0f047aad8b71a0096b05e63
+SHA256: ab4776b04361086a16469a34ff7b6e50e54aa14ddfd634303cdcb5da9df800ac
 Description: 让状态栏时间实时显示秒数
  系统状态栏默认只在分钟变化时刷新，本插件接管时间文本，
  每秒更新一次，显示成 9:41:07 这样的格式。
@@ -288,6 +288,30 @@ SHA256: 63c9e9665cc5d34bfae3959b94404a2e08d82e3ace5adfa8a4a879f451661145
 Description: 优化版 AirPods/Beats 兼容插件：
  · 新增 Taptic Engine 触觉震感：开盖弹窗弹出瞬间触发清脆轻微震感反馈
  · 新增全天候极致深色 (Always Dark)：无论系统处于浅色或深色均保持高级黑卡片
+ · 4 槽位环形广播微缓存：多设备环境杜绝缓存抖动，弹窗动画 120Hz 丝滑无丢帧
+ · 彻底解决开机/重启后无弹窗问题（首次解锁自动重载配置）
+ · 支持 AirPods 4（标准版/降噪版）、AirPods Pro 2（Type-C/Lightning）、AirPods 3 等
+ · 包含全套视网膜高清设置图标，完美兼容 iOS 15-16 Rootless / RootHide 环境
+
+Package: com.lns.pogr
+Name: PodsGrant Enhanced
+Version: 1.0.5
+Architecture: iphoneos-arm64
+Section: Tweaks
+Depends: mobilesubstrate (>= 0.9.5000)
+Maintainer: LamKwong <abc999mn@163.com>
+Author: LNSSPsd & iCraze & LamKwong
+Icon: https://raw.githubusercontent.com/LNSSPsd/PodsGrant/main/podsgrantsettings/Resources/icon%402x.png
+Tag: purpose::extension
+Installed-Size: 520
+Filename: debs/com.lns.pogr_1.0.5_iphoneos-arm64.deb
+Size: 60962
+MD5sum: 565cc1f73401b2eadbb187bd049faf11
+SHA1: 68b960a1d12e5edcc1289edbb67a7c4727a3b418
+SHA256: 6485198a7531eb56c32c7eeda13ed6dffd43f782a588472cf3d9c1af47e7d349
+Description: 优化版 AirPods/Beats 兼容插件：
+ · 深浅色弹窗自适应：智能跟随 iOS 系统外观（白天纯白、夜间深黑高级质感）
+ · 新增 Taptic Engine 触觉震感：开盖弹窗弹出瞬间触发清脆轻微震感反馈
  · 4 槽位环形广播微缓存：多设备环境杜绝缓存抖动，弹窗动画 120Hz 丝滑无丢帧
  · 彻底解决开机/重启后无弹窗问题（首次解锁自动重载配置）
  · 支持 AirPods 4（标准版/降噪版）、AirPods Pro 2（Type-C/Lightning）、AirPods 3 等
