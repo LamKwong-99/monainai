@@ -1,14 +1,14 @@
 Package: com.lns.pogr
 Name: PodsGrant Enhanced
-Version: 1.0.3
+Version: 1.0.4
 Architecture: iphoneos-arm64
 Description: 优化版 AirPods/Beats 兼容插件：
- · 极致精简与性能调优：彻底移除视图递归轮询，保障 60/120Hz 丝滑高帧率弹窗动画
- · 内置极简纯净 DarkPods 原生深色模式与 iOS 17 粗体卡片
+ · 新增 Taptic Engine 触觉震感：开盖弹窗弹出瞬间触发清脆轻微震感反馈
+ · 新增全天候极致深色 (Always Dark)：无论系统处于浅色或深色均保持高级黑卡片
+ · 4 槽位环形广播微缓存：多设备环境杜绝缓存抖动，弹窗动画 120Hz 丝滑无丢帧
  · 彻底解决开机/重启后无弹窗问题（首次解锁自动重载配置）
- · 毫秒级极速开盖弹窗响应（Zero-Copy 零拷贝与广播 micro-cache 优化）
  · 支持 AirPods 4（标准版/降噪版）、AirPods Pro 2（Type-C/Lightning）、AirPods 3 等
- · 包含全套视网膜高清设置图标，完美兼容 Rootless / RootHide 环境
+ · 包含全套视网膜高清设置图标，完美兼容 iOS 15-16 Rootless / RootHide 环境
 Maintainer: LamKwong <abc999mn@163.com>
 Author: LNSSPsd & iCraze & LamKwong
 Section: Tweaks
