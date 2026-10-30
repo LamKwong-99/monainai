@@ -110,6 +110,7 @@ static NSNumber *TSKernForSize(CGFloat size) {
 @property (nonatomic, copy) NSString *suffix;        // " AM" 或 ""
 @property (nonatomic, strong) NSAttributedString *attr;
 @property (nonatomic, strong) UIFont *baseFont;
+@property (nonatomic, strong) UIFont *appliedFont;
 @property (nonatomic, strong) UIFont *cachedFont;
 @property (nonatomic, strong) NSDictionary *cachedAttrs;
 @property (nonatomic, copy) NSString *lastOut;
