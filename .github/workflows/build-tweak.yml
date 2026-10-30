@@ -40,14 +40,23 @@ jobs:
           make package FINALPACKAGE=1 DEBUG=0
           ls -l packages/
 
+      - name: Build PodsGrant
+        working-directory: tweaks/PodsGrant
+        run: |
+          export PATH="$(brew --prefix make)/libexec/gnubin:$PATH"
+          make package FINALPACKAGE=1 DEBUG=0
+          ls -l packages/
+
       - name: Publish deb and rebuild index
         run: |
           mkdir -p debs
-          # 保留历史版本，方便 Sileo 里降级；不再删除同包名的旧 deb
-          for f in tweaks/TimeSeconds/packages/*.deb; do
-            base=$(basename "$f")
-            echo "publish: $base"
-            cp -f "$f" debs/
+          # 保留历史版本，方便在 Sileo 里降级；不再删除同包名的旧 deb
+          for f in tweaks/*/packages/*.deb; do
+            if [ -f "$f" ]; then
+              base=$(basename "$f")
+              echo "publish: $base"
+              cp -f "$f" debs/
+            fi
           done
           ls -l debs/
           python3 build_repo.py
@@ -57,6 +66,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "索引和 deb 都没有变化"
           else
-            git commit -m "build: TimeSeconds $(date -u +%Y%m%d-%H%M%S)"
+            git commit -m "build: TimeSeconds & PodsGrant $(date -u +%Y%m%d-%H%M%S)"
             git push
           fi
