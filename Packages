@@ -118,11 +118,12 @@ Depends: mobilesubstrate
 Maintainer: ajun
 Author: ajun
 Tag: purpose::extension
+Installed-Size: 204
 Filename: debs/com.ajun.timeseconds_2.1.4_iphoneos-arm64.deb
-Size: 13230
-MD5sum: 378a3ce9c1a11b7fd74f57cf0688a727
-SHA1: bff5858941dc9b8b02d22ab6b7071dfa4816bd6d
-SHA256: d6dd5f9ad7cfea97775a74a74c1e63c725d3f09eb12dccbd175aa82baa5dd966
+Size: 13866
+MD5sum: 13e86776e83b562d58367dfd9f790a24
+SHA1: f93776b55d00cab74222c9a4184ebbcd5e6f8fb5
+SHA256: 6fea2eb890aa3e195d2ccb5ab4298c6a703a182cad79588bbba1a281c16f6677
 Description: 让状态栏时间实时显示秒数
  系统状态栏默认只在分钟变化时刷新，本插件接管时间文本，
  每秒更新一次，显示成 9:41:07 这样的格式。
