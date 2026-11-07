@@ -665,12 +665,30 @@ Icon: https://TrollStoreX.Github.io/sileodepiction/PodsGrant/icon.png
 Tag: purpose::extension
 Filename: debs/com.lns.pogr_1.1.6_iphoneos-arm64.deb
 Size: 150640
-MD5sum: 85f3500bf37335a6f4138a99e0d52c78
-SHA1: bab0b1663975d0d89a974adde8ea1703c50f4e02
-SHA256: e40635752c04d21274fa132a797cfc467302892a2bc7070536c6dca3a9063c45
+MD5sum: dbb8c7622370d0ab7915a7c34b464e11
+SHA1: 48554cf08b0ce4ee678d062747756d6f12d861b7
+SHA256: 53246078d817cc21e3f5c748ee0ac094b4c0e7686de8c2143fa02e86680828c4
 Description: 提高低系统与新 AirPods 兼容性 (终极完美 Rootless 版: 100% 修复震动 + 零闪白)
  · 完美保留 Taptic Engine 线性微触感震动反馈与 0% 闪白极简深色弹窗。
  · 包含全套设置面板与后台守护进程自动重载。
+
+Package: com.lns.pogr
+Name: AirPods PodsGrant
+Version: 1.1.7
+Architecture: iphoneos-arm64
+Section: AirPods
+Depends: mobilesubstrate (>= 0.9.5000)
+Maintainer: Ruphane & LamKwong
+Author: Ruphane & LNSSPsd & LamKwong
+SileoDepiction: https://lamkwong-99.github.io/monainai/depictions/com.lns.pogr.json
+Icon: https://TrollStoreX.Github.io/sileodepiction/PodsGrant/icon.png
+Tag: purpose::extension
+Filename: debs/com.lns.pogr_1.1.7_iphoneos-arm64.deb
+Size: 150546
+MD5sum: b2eea1ded81407ca98ec893fc24b475b
+SHA1: 0ad7d89f4321002778b722b1a235601968d2f489
+SHA256: 76633fe86f708180c18ddcf474df47c3184257abcba893ad6a03d3a7eee814af
+Description: 提高低系统与新 AirPods 兼容性，融合 DarkPods 原生纯深色弹窗。
 
 Package: com.lns.pogrs
 Name: PodsGrant Enhanced (RootHide)
@@ -789,10 +807,28 @@ Icon: https://TrollStoreX.Github.io/sileodepiction/PodsGrant/icon.png
 Tag: purpose::extension
 Filename: debs/com.lns.pogrs_1.1.6_iphoneos-arm64e.deb
 Size: 150880
-MD5sum: b34965d532d0cc03920f0b717dca3131
-SHA1: 9c89f0f90c400fedd390d4543b6f932884a34b8c
-SHA256: 41929c960531bb452a457e7b2f154a7f4a3616d19f4a47947bed63ff275e1099
+MD5sum: 6f74770df8d818f213e7f14cc1ae74fe
+SHA1: 375d69f4dd1d4e7c9d0bf3b5a41c1c85232b33b0
+SHA256: 73bf233da9ceadc86a6057f01c079831b51b0c0ea63ba69d2c3acca58f0dd513
 Description: 提高低系统与新 AirPods 兼容性 (终极完美版: 100% 修复震动 + 零闪白 + 原生设置)
  · 彻底修复 Taptic Engine 线性马达清脆震感反馈（补全 x21 selector 寄存器加载）。
  · 彻底杜绝冷启动与浅色模式偶发闪白（完全剔除 initWithFrame 与 didMoveToWindow 内部强制变色）。
  · 设置面板 podsgrantsettings 具备原装完整 SHA256 代码签名，原生 RootHide 免转换直装，杜绝 errno=1 签名失效。
+
+Package: com.lns.pogrs
+Name: AirPods PodsGrant
+Version: 1.1.7
+Architecture: iphoneos-arm64e
+Section: AirPods
+Depends: mobilesubstrate (>= 0.9.5000)
+Maintainer: Ruphane & LamKwong
+Author: Ruphane & LNSSPsd & LamKwong
+SileoDepiction: https://lamkwong-99.github.io/monainai/depictions/com.lns.pogrs.json
+Icon: https://TrollStoreX.Github.io/sileodepiction/PodsGrant/icon.png
+Tag: purpose::extension
+Filename: debs/com.lns.pogrs_1.1.7_iphoneos-arm64e.deb
+Size: 150616
+MD5sum: 93f20c9656c1b87a3664be94e3f06e31
+SHA1: fd4fe9501c5ddff17db6414b260dc6fa696edb73
+SHA256: eea6c6f0bf89f86c1963b49d8d0bb6b6615f0f48f3072f55f8423cfbe60c1dff
+Description: 提高低系统与新 AirPods 兼容性，融合 DarkPods 原生纯深色弹窗。
