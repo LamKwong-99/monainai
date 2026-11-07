@@ -86,6 +86,37 @@ static inline uint16_t fast_patch_pid(uint16_t orig) {
 
 %end
 
+// ================================================================
+// 完全复刻原版 DarkPods 的极简稳定深色逻辑 (0% 闪白，完美跟随 iOS 17 弹窗风格)
+// ================================================================
+%group darkpods_hook_grp
+
+%hook PRXCardContentView
+
+- (void)setTitleView:(id)titleView {
+	%orig;
+	if (titleView && [titleView respondsToSelector:@selector(text)] && [titleView respondsToSelector:@selector(setTitleText:)]) {
+		id text = [titleView text];
+		[titleView setTitleText:text];
+	}
+}
+
+%end
+
+%hook PRXFlowConfiguration
+
+- (void)setSupportsDarkMode:(BOOL)arg1 {
+	%orig(YES);
+}
+
+- (BOOL)supportsDarkMode {
+	return YES;
+}
+
+%end
+
+%end
+
 %dtor {
 	if (g_unlock_token != 0) {
 		notify_cancel(g_unlock_token);
@@ -102,8 +133,9 @@ static inline uint16_t fast_patch_pid(uint16_t orig) {
 	uint32_t len = sizeof(exec_path);
 	_NSGetExecutablePath(exec_path, &len);
 
-	// 方案1：若目标进程为弹窗渲染服务 (SharingViewService)，直接退出，绝不干涉 UI，与独立 DarkPods 完美共存
+	// 若目标进程为弹窗渲染服务 (SharingViewService)，初始化纯净版 DarkPods 钩子，0 毫秒原生深色，杜绝任何闪白
 	if (strstr(exec_path, "SharingViewService") != NULL) {
+		%init(darkpods_hook_grp);
 		return;
 	}
 

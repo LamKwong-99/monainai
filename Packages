@@ -615,6 +615,25 @@ Description: 提高低系统与新 AirPods 兼容性 (Rootless 完美版)
  · 完美支持 iOS 15-16 开盖弹窗与蓝牙配对协议。
  · 包含全套设置面板与后台守护进程自动重载。
 
+Package: com.lns.pogr
+Name: AirPods PodsGrant
+Version: 1.1.4
+Architecture: iphoneos-arm64
+Section: AirPods
+Depends: mobilesubstrate (>= 0.9.5000)
+Maintainer: Ruphane & LamKwong
+Author: Ruphane & LNSSPsd & LamKwong
+Icon: https://TrollStoreX.Github.io/sileodepiction/PodsGrant/icon.png
+Tag: purpose::extension
+Filename: debs/com.lns.pogr_1.1.4_iphoneos-arm64.deb
+Size: 150618
+MD5sum: a143c3efc68e34edb7f915d31152393e
+SHA1: 3c35243ab73525cd72b893dfcbb7987d8ab2a063
+SHA256: 56d2144242bb26aca5f7efac93b98e11768e7a8124a4f4ea50331c4a679b3567
+Description: 提高低系统与新 AirPods 兼容性 (DarkPods 零闪白 Rootless 版)
+ · 彻底复刻官方 DarkPods 纯净深色逻辑，0 闪白优雅弹窗。
+ · 包含全套设置面板与后台守护进程自动重载。
+
 Package: com.lns.pogrs
 Name: PodsGrant Enhanced (RootHide)
 Version: 1.0.8
@@ -678,3 +697,23 @@ Description: 提高低系统与新 AirPods 兼容性 (RootHide 完美修复版)
  · 彻底解决 Dopamine-RootHide (tag 30) 下设置面板「podsgrantsettings.bundle」载入失败 (code signature invalid errno=1) 的严重 Bug。
  · 恢复底层与弹窗双重调用链，完美支持开盖弹窗、电量显示与蓝牙配对控制。
  · 内置完整 SHA256 签名与 arm64e PAC 支持，Sileo 原生安装，无需转换。
+
+Package: com.lns.pogrs
+Name: AirPods PodsGrant
+Version: 1.1.4
+Architecture: iphoneos-arm64e
+Section: AirPods
+Depends: mobilesubstrate (>= 0.9.5000)
+Maintainer: Ruphane & LamKwong
+Author: Ruphane & LNSSPsd & LamKwong
+Icon: https://TrollStoreX.Github.io/sileodepiction/PodsGrant/icon.png
+Tag: purpose::extension
+Filename: debs/com.lns.pogrs_1.1.4_iphoneos-arm64e.deb
+Size: 150878
+MD5sum: 0c397193f3a01e9931a9a10db7d45f60
+SHA1: 50743ee4ce14ead1375740c1d87da7db53ef8322
+SHA256: a168d528ed751e7f98e76eb278edd4ee001fbc618be517c0fe3e945160258c59
+Description: 提高低系统与新 AirPods 兼容性 (DarkPods 零闪白完美版)
+ · 彻底复刻官方 DarkPods 纯净深色逻辑：完全去除 UIWindow/BackgroundView 样式抢占，彻底消灭开盖第一帧白色闪烁！
+ · 彻底解决 Dopamine-RootHide (tag 30) 下设置面板「podsgrantsettings.bundle」载入失败 (code signature invalid errno=1) 的严重 Bug。
+ · 内置完整合规 SHA256 代码签名，Sileo 原生安装，无需转换。
