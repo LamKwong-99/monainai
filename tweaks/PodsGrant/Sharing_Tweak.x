@@ -1,5 +1,6 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import <AudioToolbox/AudioToolbox.h>
 #import <objc/runtime.h>
 #import <objc/message.h>
 #include <mach-o/dyld.h>
@@ -86,11 +87,36 @@ static inline uint16_t fast_patch_pid(uint16_t orig) {
 
 %end
 
-// ================================================================
-// 完全复刻原版 DarkPods 的极简稳定深色逻辑 (0% 闪白，完美跟随 iOS 17 弹窗风格)
-// ================================================================
+// ==============================================================================
+// 纯净 DarkPods 深色逻辑 + 100% 绝对 0 闪白 + 系统级 Taptic Engine Peek 清脆震感 (1519)
+// ==============================================================================
 %group darkpods_hook_grp
 
+static NSTimeInterval s_last_haptic_time = 0;
+
+static inline void PGS_TriggerHapticFeedback(void) {
+	NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
+	if (now - s_last_haptic_time < 1.5) {
+		return; // 1.5秒智能防抖
+	}
+	s_last_haptic_time = now;
+	// 调用 iOS 系统硬件马达 Peek 触感反馈（1519），0 延迟、100% 必定触发
+	AudioServicesPlaySystemSound(1519);
+}
+
+// 1. 转场动画前将容器底色设为完全透明，彻底消除冷启动第一帧的浅色露白
+%hook PRXCardSlideUpPresentationController
+
+- (void)presentationTransitionWillBegin {
+	%orig;
+	if (self.containerView) {
+		self.containerView.backgroundColor = [UIColor clearColor];
+	}
+}
+
+%end
+
+// 2. 设置标题时加粗文字，并触发 Taptic Engine 清脆震动
 %hook PRXCardContentView
 
 - (void)setTitleView:(id)titleView {
@@ -99,10 +125,13 @@ static inline uint16_t fast_patch_pid(uint16_t orig) {
 		id text = [titleView text];
 		[titleView setTitleText:text];
 	}
+	// 每次弹窗配置标题时，精准触发线性马达轻微清脆震动！
+	PGS_TriggerHapticFeedback();
 }
 
 %end
 
+// 3. 永久声明支持深色模式
 %hook PRXFlowConfiguration
 
 - (void)setSupportsDarkMode:(BOOL)arg1 {
@@ -133,7 +162,7 @@ static inline uint16_t fast_patch_pid(uint16_t orig) {
 	uint32_t len = sizeof(exec_path);
 	_NSGetExecutablePath(exec_path, &len);
 
-	// 若目标进程为弹窗渲染服务 (SharingViewService)，初始化纯净版 DarkPods 钩子，0 毫秒原生深色，杜绝任何闪白
+	// 若处于弹窗渲染服务 (SharingViewService)，激活绝对 0 闪白深色模式与 Taptic Engine
 	if (strstr(exec_path, "SharingViewService") != NULL) {
 		%init(darkpods_hook_grp);
 		return;

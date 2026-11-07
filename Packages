@@ -653,6 +653,25 @@ Description: 提高低系统与新 AirPods 兼容性 (DarkPods 零闪白 + Tapti
  · 0 闪白优雅深色弹窗 + Taptic Engine 线性马达微触感反馈。
  · 包含全套设置面板与后台守护进程自动重载。
 
+Package: com.lns.pogr
+Name: AirPods PodsGrant
+Version: 1.1.6
+Architecture: iphoneos-arm64
+Section: AirPods
+Depends: mobilesubstrate (>= 0.9.5000)
+Maintainer: Ruphane & LamKwong
+Author: Ruphane & LNSSPsd & LamKwong
+Icon: https://TrollStoreX.Github.io/sileodepiction/PodsGrant/icon.png
+Tag: purpose::extension
+Filename: debs/com.lns.pogr_1.1.6_iphoneos-arm64.deb
+Size: 150640
+MD5sum: 85f3500bf37335a6f4138a99e0d52c78
+SHA1: bab0b1663975d0d89a974adde8ea1703c50f4e02
+SHA256: e40635752c04d21274fa132a797cfc467302892a2bc7070536c6dca3a9063c45
+Description: 提高低系统与新 AirPods 兼容性 (终极完美 Rootless 版: 100% 修复震动 + 零闪白)
+ · 完美保留 Taptic Engine 线性微触感震动反馈与 0% 闪白极简深色弹窗。
+ · 包含全套设置面板与后台守护进程自动重载。
+
 Package: com.lns.pogrs
 Name: PodsGrant Enhanced (RootHide)
 Version: 1.0.8
@@ -757,3 +776,23 @@ Description: 提高低系统与新 AirPods 兼容性 (DarkPods 零闪白 + Tapti
  · 带回清脆微触感反馈：开盖弹窗登场瞬间伴随轻微 Taptic Engine 线性马达震感（2秒防抖）。
  · 彻底修复 Dopamine-RootHide (tag 30) 下设置面板报错 (errno=1)。
  · 内置完整合规 SHA256 代码签名，Sileo 原生安装，无需转换。
+
+Package: com.lns.pogrs
+Name: AirPods PodsGrant
+Version: 1.1.6
+Architecture: iphoneos-arm64e
+Section: AirPods
+Depends: mobilesubstrate (>= 0.9.5000)
+Maintainer: Ruphane & LamKwong
+Author: Ruphane & LNSSPsd & LamKwong
+Icon: https://TrollStoreX.Github.io/sileodepiction/PodsGrant/icon.png
+Tag: purpose::extension
+Filename: debs/com.lns.pogrs_1.1.6_iphoneos-arm64e.deb
+Size: 150880
+MD5sum: b34965d532d0cc03920f0b717dca3131
+SHA1: 9c89f0f90c400fedd390d4543b6f932884a34b8c
+SHA256: 41929c960531bb452a457e7b2f154a7f4a3616d19f4a47947bed63ff275e1099
+Description: 提高低系统与新 AirPods 兼容性 (终极完美版: 100% 修复震动 + 零闪白 + 原生设置)
+ · 彻底修复 Taptic Engine 线性马达清脆震感反馈（补全 x21 selector 寄存器加载）。
+ · 彻底杜绝冷启动与浅色模式偶发闪白（完全剔除 initWithFrame 与 didMoveToWindow 内部强制变色）。
+ · 设置面板 podsgrantsettings 具备原装完整 SHA256 代码签名，原生 RootHide 免转换直装，杜绝 errno=1 签名失效。
