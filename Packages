@@ -576,6 +576,26 @@ Description: 优化版 AirPods/Beats 兼容插件：
  · 4 槽位环形广播微缓存：多设备环境杜绝缓存抖动，弹窗动画 120Hz 丝滑无丢帧
  · 包含全套视网膜高清设置图标，完美兼容 iOS 15-16 Rootless / RootHide 环境
 
+Package: com.lns.pogr
+Name: PodsGrant Enhanced
+Version: 1.1.2
+Architecture: iphoneos-arm64
+Section: Tweaks
+Depends: mobilesubstrate (>= 0.9.5000)
+Maintainer: LamKwong <abc999mn@163.com>
+Author: LNSSPsd & iCraze & LamKwong
+Icon: https://raw.githubusercontent.com/LNSSPsd/PodsGrant/main/podsgrantsettings/Resources/icon%402x.png
+Tag: purpose::extension
+Filename: debs/com.lns.pogr_1.1.2_iphoneos-arm64.deb
+Size: 150588
+MD5sum: ceaccc71c71130ee8d39eb25f00fc965
+SHA1: 5ef05fbbd26fadaa9902e85e145e358fe6c46b07
+SHA256: 1f5c25be45e9c4c15ff06dfa8f6c86a50dff6df66aeb8f86ecf5cabff09502ce
+Description: 优化版 AirPods/Beats 兼容插件 (方案1解耦版)
+ - 与独立 DarkPods 插件完美共存：彻底移除 SharingViewService 的 UI 注入，由 DarkPods 独立负责弹窗渲染，彻底解决冲突闪退无弹窗。
+ - 专精底层蓝牙与配对协议：负责 bluetoothd 与 sharingd 广播重写与蓝牙配对。
+ - 稳定支持 iOS 15-16 Rootless / RootHide 环境。
+
 Package: com.lns.pogrs
 Name: PodsGrant Enhanced (RootHide)
 Version: 1.0.8
@@ -599,3 +619,23 @@ Description: 优化版 AirPods/Beats 兼容插件：
  · Taptic Engine 线性马达震感：开盖弹窗登场瞬间伴随清脆微触感反馈（2秒防抖）
  · 4 槽位环形广播微缓存：多设备环境杜绝缓存抖动，弹窗动画 120Hz 丝滑无丢帧
  · 包含全套视网膜高清设置图标，完美兼容 iOS 15-16 Rootless / RootHide 环境
+
+Package: com.lns.pogrs
+Name: PodsGrant Enhanced (RootHide)
+Version: 1.1.2
+Architecture: iphoneos-arm64e
+Section: Tweaks
+Depends: mobilesubstrate (>= 0.9.5000)
+Maintainer: LamKwong <abc999mn@163.com>
+Author: LNSSPsd & iCraze & LamKwong
+Icon: https://raw.githubusercontent.com/LNSSPsd/PodsGrant/main/podsgrantsettings/Resources/icon%402x.png
+Tag: purpose::extension
+Filename: debs/com.lns.pogrs_1.1.2_iphoneos-arm64e.deb
+Size: 150668
+MD5sum: 71a4eb55c5d023849ee30dac0f659911
+SHA1: 1c0f2ae01923c91c3507d79021741f7603287bbc
+SHA256: ef03a5f03285e46aeb13dfd35bf2909284f3599fc164324b81cfea38db238604
+Description: 优化版 AirPods/Beats 兼容插件 (方案1解耦版)
+ - 与独立 DarkPods 插件完美共存：彻底移除 SharingViewService 的 UI 注入，由 DarkPods 独立负责弹窗渲染，彻底解决冲突闪退无弹窗。
+ - 专精底层蓝牙与配对协议：负责 bluetoothd 与 sharingd 广播重写与蓝牙配对。
+ - 稳定支持 iOS 15-16 Rootless / RootHide 环境。
