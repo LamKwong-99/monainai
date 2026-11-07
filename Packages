@@ -596,6 +596,25 @@ Description: 优化版 AirPods/Beats 兼容插件 (方案1解耦版)
  - 专精底层蓝牙与配对协议：负责 bluetoothd 与 sharingd 广播重写与蓝牙配对。
  - 稳定支持 iOS 15-16 Rootless / RootHide 环境。
 
+Package: com.lns.pogr
+Name: AirPods PodsGrant
+Version: 1.1.3
+Architecture: iphoneos-arm64
+Section: AirPods
+Depends: mobilesubstrate (>= 0.9.5000)
+Maintainer: Ruphane & LamKwong
+Author: Ruphane & LNSSPsd & LamKwong
+Icon: https://TrollStoreX.Github.io/sileodepiction/PodsGrant/icon.png
+Tag: purpose::extension
+Filename: debs/com.lns.pogr_1.1.3_iphoneos-arm64.deb
+Size: 150588
+MD5sum: bd225c4b58a2b30e66fb6b2b142ca346
+SHA1: ccb641d8a8537f0aa414d58cee623734ebb59a23
+SHA256: c39f80c333e6ee0ca20ee3a7afa0f592da5252f6990fde2ce3251ce9334fb3ea
+Description: 提高低系统与新 AirPods 兼容性 (Rootless 完美版)
+ · 完美支持 iOS 15-16 开盖弹窗与蓝牙配对协议。
+ · 包含全套设置面板与后台守护进程自动重载。
+
 Package: com.lns.pogrs
 Name: PodsGrant Enhanced (RootHide)
 Version: 1.0.8
@@ -639,3 +658,23 @@ Description: 优化版 AirPods/Beats 兼容插件 (方案1解耦版)
  - 与独立 DarkPods 插件完美共存：彻底移除 SharingViewService 的 UI 注入，由 DarkPods 独立负责弹窗渲染，彻底解决冲突闪退无弹窗。
  - 专精底层蓝牙与配对协议：负责 bluetoothd 与 sharingd 广播重写与蓝牙配对。
  - 稳定支持 iOS 15-16 Rootless / RootHide 环境。
+
+Package: com.lns.pogrs
+Name: AirPods PodsGrant
+Version: 1.1.3
+Architecture: iphoneos-arm64e
+Section: AirPods
+Depends: mobilesubstrate (>= 0.9.5000)
+Maintainer: Ruphane & LamKwong
+Author: Ruphane & LNSSPsd & LamKwong
+Icon: https://TrollStoreX.Github.io/sileodepiction/PodsGrant/icon.png
+Tag: purpose::extension
+Filename: debs/com.lns.pogrs_1.1.3_iphoneos-arm64e.deb
+Size: 150838
+MD5sum: bce6b4b90d76cbac07a953ddd3b9e185
+SHA1: 426ff28f74df2787254391a3c7352732b686d88f
+SHA256: 24fd4fc7704547cc6eac0cfdbad4f6d6ea59c1550d9f465c0ddba28657600b94
+Description: 提高低系统与新 AirPods 兼容性 (RootHide 完美修复版)
+ · 彻底解决 Dopamine-RootHide (tag 30) 下设置面板「podsgrantsettings.bundle」载入失败 (code signature invalid errno=1) 的严重 Bug。
+ · 恢复底层与弹窗双重调用链，完美支持开盖弹窗、电量显示与蓝牙配对控制。
+ · 内置完整 SHA256 签名与 arm64e PAC 支持，Sileo 原生安装，无需转换。
