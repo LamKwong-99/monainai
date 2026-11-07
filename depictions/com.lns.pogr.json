@@ -13,7 +13,7 @@
         },
         {
           "class": "DepictionMarkdownView",
-          "markdown": "提高低系统与新 AirPods 兼容性，融合 DarkPods 原生深色弹窗逻辑。\n\n- 完美兼容 AirPods Pro 2 / AirPods 3 / AirPods 4 / Beats 系列耳机\n- 100% 融合 DarkPods 原生深色弹窗，彻底杜绝冷启动与浅色模式闪白\n- 原生 RootHide 与 Rootless 双架构支持，提供原生设置面板"
+          "markdown": "提高低系统与新 AirPods 兼容性，融合 DarkPods 原生深色弹窗与触觉反馈。\n\n- 完美兼容 AirPods Pro 2 / AirPods 3 / AirPods 4 / Beats 系列耳机\n- 0% 初始白底：全层级视图深度锁死深色（UIUserInterfaceStyleDark），彻底杜绝冷启动与浅色模式闪白\n- Taptic Engine 线性马达震感：开盖弹窗登场瞬间伴随轻微微触感反馈\n- 原生 RootHide 与 Rootless 双架构支持，提供原生设置面板"
         },
         {
           "class": "DepictionSeparatorView"
@@ -31,7 +31,7 @@
       "views": [
         {
           "class": "DepictionMarkdownView",
-          "markdown": "### 1.1.7\n- **融合 DarkPods 原生深色逻辑**：完全依照 DarkPods 原生三项协议进行挂钩，剔除多余视图生命周期劫持，彻底解决冷启动闪白问题。\n- **支持 Sileo 原生更新记录**：接入 Sileo 原生 Depiction 架构，实时显示版本更新日志。\n- **精简描述规范**：规范版本日志，移除多余修饰词。\n\n### 1.1.6\n- 修复设置面板在 Dopamine-RootHide 下的代码签名校验，解决 errno=1 报错。\n- 优化 RootHide 原生架构免转换直装流程。\n\n### 1.1.5\n- 调整底层通讯协议与连接防抖。\n\n### 1.0.8\n- 初始适配与稳定性增强。"
+          "markdown": "### 1.1.8\n- **彻底杜绝初始白底（0% 闪白）**：根源重构外观锁定引擎，将全层级渲染风格直接锚定为深色模式（UIUserInterfaceStyleDark），杜绝冷启动时因未就绪系统环境特征误判导致的瞬间白底。\n- **完整保留 Taptic Engine 线性马达震感**：恢复原汁原味的开盖微触感反馈，伴随弹窗出现精准触发。\n- **Sileo 原生更新日志规范化**：接入 Sileo 原生更新记录，保持版本日志简洁明了。\n\n### 1.1.7\n- 调试 DarkPods 协议挂钩。\n\n### 1.1.6\n- 修复设置面板在 Dopamine-RootHide 下的代码签名校验，解决 errno=1 报错。\n- 优化 RootHide 原生架构免转换直装流程。\n\n### 1.1.5\n- 调整底层通讯协议与连接防抖。\n\n### 1.0.8\n- 初始适配与稳定性增强。"
         }
       ]
     }

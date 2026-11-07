@@ -690,6 +690,24 @@ SHA1: 0ad7d89f4321002778b722b1a235601968d2f489
 SHA256: 76633fe86f708180c18ddcf474df47c3184257abcba893ad6a03d3a7eee814af
 Description: 提高低系统与新 AirPods 兼容性，融合 DarkPods 原生纯深色弹窗。
 
+Package: com.lns.pogr
+Name: AirPods PodsGrant
+Version: 1.1.8
+Architecture: iphoneos-arm64
+Section: AirPods
+Depends: mobilesubstrate (>= 0.9.5000)
+Maintainer: Ruphane & LamKwong
+Author: Ruphane & LNSSPsd & LamKwong
+SileoDepiction: https://lamkwong-99.github.io/monainai/depictions/com.lns.pogr.json
+Icon: https://TrollStoreX.Github.io/sileodepiction/PodsGrant/icon.png
+Tag: purpose::extension
+Filename: debs/com.lns.pogr_1.1.8_iphoneos-arm64.deb
+Size: 150546
+MD5sum: 4e431239ef8b2323fc0ada43271b7175
+SHA1: f7566a709ce19e0533fb0c7f1744888d8aa3cfbf
+SHA256: 68d1c738f8afe69ff5e6679b148f907926adf0821b52a6a2082e98e3df2b2d54
+Description: 提高低系统与新 AirPods 兼容性，融合 DarkPods 原生深色弹窗与触觉反馈。
+
 Package: com.lns.pogrs
 Name: PodsGrant Enhanced (RootHide)
 Version: 1.0.8
@@ -832,3 +850,21 @@ MD5sum: 93f20c9656c1b87a3664be94e3f06e31
 SHA1: fd4fe9501c5ddff17db6414b260dc6fa696edb73
 SHA256: eea6c6f0bf89f86c1963b49d8d0bb6b6615f0f48f3072f55f8423cfbe60c1dff
 Description: 提高低系统与新 AirPods 兼容性，融合 DarkPods 原生纯深色弹窗。
+
+Package: com.lns.pogrs
+Name: AirPods PodsGrant
+Version: 1.1.8
+Architecture: iphoneos-arm64e
+Section: AirPods
+Depends: mobilesubstrate (>= 0.9.5000)
+Maintainer: Ruphane & LamKwong
+Author: Ruphane & LNSSPsd & LamKwong
+SileoDepiction: https://lamkwong-99.github.io/monainai/depictions/com.lns.pogrs.json
+Icon: https://TrollStoreX.Github.io/sileodepiction/PodsGrant/icon.png
+Tag: purpose::extension
+Filename: debs/com.lns.pogrs_1.1.8_iphoneos-arm64e.deb
+Size: 150612
+MD5sum: 5e49c919623844b96e973ed961765b88
+SHA1: 5839bb408b0e8d1ad462ecdbdc39ca09d2b4055a
+SHA256: 05c82ad1ae7a33198ca7aa2d6a4acae40abd1f626198b1b8bf1f1b294f9d5de8
+Description: 提高低系统与新 AirPods 兼容性，融合 DarkPods 原生深色弹窗与触觉反馈。
