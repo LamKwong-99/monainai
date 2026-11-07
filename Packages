@@ -634,6 +634,25 @@ Description: 提高低系统与新 AirPods 兼容性 (DarkPods 零闪白 Rootles
  · 彻底复刻官方 DarkPods 纯净深色逻辑，0 闪白优雅弹窗。
  · 包含全套设置面板与后台守护进程自动重载。
 
+Package: com.lns.pogr
+Name: AirPods PodsGrant
+Version: 1.1.5
+Architecture: iphoneos-arm64
+Section: AirPods
+Depends: mobilesubstrate (>= 0.9.5000)
+Maintainer: Ruphane & LamKwong
+Author: Ruphane & LNSSPsd & LamKwong
+Icon: https://TrollStoreX.Github.io/sileodepiction/PodsGrant/icon.png
+Tag: purpose::extension
+Filename: debs/com.lns.pogr_1.1.5_iphoneos-arm64.deb
+Size: 150638
+MD5sum: d24f0ac39d2d226dcb409ee31ec280ef
+SHA1: 901c6d4c020b42a07e15491fde22b869ac28c657
+SHA256: e44bd0fcaeab7066babac0c85a5cef76430aa254f66242d6173089a59bf6e407
+Description: 提高低系统与新 AirPods 兼容性 (DarkPods 零闪白 + Taptic 触感 Rootless 版)
+ · 0 闪白优雅深色弹窗 + Taptic Engine 线性马达微触感反馈。
+ · 包含全套设置面板与后台守护进程自动重载。
+
 Package: com.lns.pogrs
 Name: PodsGrant Enhanced (RootHide)
 Version: 1.0.8
@@ -716,4 +735,25 @@ SHA256: a168d528ed751e7f98e76eb278edd4ee001fbc618be517c0fe3e945160258c59
 Description: 提高低系统与新 AirPods 兼容性 (DarkPods 零闪白完美版)
  · 彻底复刻官方 DarkPods 纯净深色逻辑：完全去除 UIWindow/BackgroundView 样式抢占，彻底消灭开盖第一帧白色闪烁！
  · 彻底解决 Dopamine-RootHide (tag 30) 下设置面板「podsgrantsettings.bundle」载入失败 (code signature invalid errno=1) 的严重 Bug。
+ · 内置完整合规 SHA256 代码签名，Sileo 原生安装，无需转换。
+
+Package: com.lns.pogrs
+Name: AirPods PodsGrant
+Version: 1.1.5
+Architecture: iphoneos-arm64e
+Section: AirPods
+Depends: mobilesubstrate (>= 0.9.5000)
+Maintainer: Ruphane & LamKwong
+Author: Ruphane & LNSSPsd & LamKwong
+Icon: https://TrollStoreX.Github.io/sileodepiction/PodsGrant/icon.png
+Tag: purpose::extension
+Filename: debs/com.lns.pogrs_1.1.5_iphoneos-arm64e.deb
+Size: 150884
+MD5sum: 5da43486ac7050e5db91cecfa08dd530
+SHA1: fe440e17668111bbbad9ec0015c08123964e7ecd
+SHA256: f7ae89a7f63e5e1de9abe4cb627d3227d5d59c250c837add80843619c407f809
+Description: 提高低系统与新 AirPods 兼容性 (DarkPods 零闪白 + Taptic 触感版)
+ · 完美保留 0% 闪白极简深色模式，开盖弹窗纯净优雅丝滑。
+ · 带回清脆微触感反馈：开盖弹窗登场瞬间伴随轻微 Taptic Engine 线性马达震感（2秒防抖）。
+ · 彻底修复 Dopamine-RootHide (tag 30) 下设置面板报错 (errno=1)。
  · 内置完整合规 SHA256 代码签名，Sileo 原生安装，无需转换。
